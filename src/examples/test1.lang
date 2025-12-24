@@ -1,5 +1,1 @@
-set a = true
-set b = false
-a and not b
-5 > 3 and 2 < 10
-"foo" + "bar"
+to:do
