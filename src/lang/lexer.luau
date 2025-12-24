@@ -74,7 +74,7 @@ local function tokenise(source: string): { token }
 					break
 				end
 
-				-- optional: handle escape sequences
+				-- handle escape sequences
 				if c == "\\" then
 					i += 1
 					local nextChar = source:sub(i, i)
