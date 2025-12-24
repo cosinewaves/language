@@ -24,7 +24,7 @@ end
 -- declare a new variable in this scope
 function environment.declare(self: environment, name: string, value: any): ()
 	if self.values[name] ~= nil then
-		error("variable already declared: " .. name)
+		error("(environment.declare) variable already declared: " .. name)
 	end
 	self.values[name] = value
 end
@@ -36,7 +36,7 @@ function environment.assign(self: environment, name: string, value: any): ()
 	elseif self.parent then
 		self.parent:assign(name, value)
 	else
-		error("assignment to undeclared variable: " .. name)
+		error("(environment.assign) assignment to undeclared variable: " .. name)
 	end
 end
 
@@ -57,7 +57,7 @@ function environment.lookup(self: environment, name: string): any
 	elseif self.parent then
 		return self.parent:lookup(name)
 	end
-	error("undefined variable: " .. name)
+	error("(environment.lookup) undefined variable: " .. name)
 end
 
 return {

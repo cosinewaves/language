@@ -42,7 +42,7 @@ local function evaluate(node: statement | expression, env: environment): runtime
 		if env:has(assign.identifier.symbol) then
 			env:assign(assign.identifier.symbol, value)
 		else
-			error("assignment to undeclared variable: " .. assign.identifier.symbol)
+			error("(evaluator.evaluate) assignment to undeclared variable: " .. assign.identifier.symbol)
 		end
 		return value
 	end
@@ -89,7 +89,7 @@ local function evaluate(node: statement | expression, env: environment): runtime
 			elseif op == "^" then
 				return left ^ right
 			else
-				error("unknown numeric operator: " .. op)
+				error("(evaluator.evaluate) unknown numeric operator: " .. op)
 			end
 		end
 
@@ -98,16 +98,16 @@ local function evaluate(node: statement | expression, env: environment): runtime
 			if op == "+" then
 				return left .. right
 			else
-				error("invalid operator for strings: " .. op)
+				error("(evaluator.evaluate) invalid operator for strings: " .. op)
 			end
 		end
 
 		-- todo: boolean logic
 
-		error("invalid binary operation between " .. type(left) .. " and " .. type(right))
+		error("(evaluator.evaluate) invalid binary operation between " .. type(left) .. " and " .. type(right))
 	end
 
-	error("unknown AST node: " .. tostring(node.kind))
+	error("(evaluator.evaluate) unknown AST node: " .. tostring(node.kind))
 end
 
 local function run(programNode: program & expression): runtimeValue

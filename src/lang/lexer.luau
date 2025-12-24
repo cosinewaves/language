@@ -92,7 +92,7 @@ local function tokenise(source: string): { token }
 			end
 
 			if i > length then
-				error("unterminated string literal")
+				error("(lexer.tokenise) unterminated string literal")
 			end
 
 			-- consume closing quote
@@ -102,7 +102,7 @@ local function tokenise(source: string): { token }
 
 		-- unknown characters
 		else
-			error(string.format("unrecognized character '%s' (%d)", char, string.byte(char)))
+			error(string.format("(lexer.tokenise) unrecognized character '%s' (%d)", char, string.byte(char)))
 		end
 	end
 

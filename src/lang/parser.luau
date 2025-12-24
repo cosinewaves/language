@@ -82,7 +82,7 @@ end
 function parser.parseStatement(self: parser): statement
 	local t = self:at()
 	if not t then
-		error("unexpected end of input")
+		error("(parser.parseStatement) unexpected end of input")
 	end
 
 	if t.type == tokens.SET then
@@ -100,8 +100,8 @@ end
 function parser.parseVariableDeclaration(self: parser): statement
 	self:consume() -- consume 'set'
 
-	local name = self:expect(tokens.IDENTIFIER, "expected identifier after 'set'")
-	self:expect(tokens.EQUALS, "expected '=' after identifier")
+	local name = self:expect(tokens.IDENTIFIER, "(parser.parseVariableDeclaration) expected identifier after 'set'")
+	self:expect(tokens.EQUALS, "(parser.parseVariableDeclaration) expected '=' after identifier")
 
 	local value = self:parseExpression()
 	return ast.variableDeclaration(ast.identifier(name.value), value) :: statement
@@ -149,7 +149,7 @@ end
 function parser.parsePrimaryExpression(self: parser): expression
 	local t = self:at()
 	if not t then
-		error("unexpected end of input")
+		error("(parser.parsePrimaryExpression) unexpected end of input")
 	end
 
 	if t.type == tokens.NUMBER then
@@ -165,7 +165,7 @@ function parser.parsePrimaryExpression(self: parser): expression
 	if t.type == tokens.OPEN_PARENTHESIS then
 		self:consume()
 		local expr = self:parseExpression()
-		self:expect(tokens.CLOSE_PARENTHESIS, "expected closing parenthesis")
+		self:expect(tokens.CLOSE_PARENTHESIS, "(parser.parsePrimaryExpression) expected closing parenthesis")
 		return expr
 	end
 
@@ -175,7 +175,7 @@ function parser.parsePrimaryExpression(self: parser): expression
 		return ast.stringLiteral(t.value) :: expression
 	end
 
-	error(string.format("unexpected token: %s (%s)", t.type :: string, t.value))
+	error(string.format("(parser.parsePrimaryExpression) unexpected token: %s (%s)", t.type :: string, t.value))
 end
 
 -- entry point
