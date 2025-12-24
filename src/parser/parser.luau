@@ -148,7 +148,7 @@ function parser.parseComparison(self: parser): expression
 		if v == "==" or v == "!=" or v == "<" or v == ">" or v == "<=" or v == ">=" then
 			local op = self:consume().value
 			local right = self:parseAdditive()
-			left = ast.binaryExpression(left, op, right)
+			left = ast.binaryExpression(left, op, right) :: expression
 		else
 			break
 		end
@@ -162,11 +162,11 @@ function parser.parseAdditive(self: parser): expression
 	local left = self:parseMultiplicative()
 
 	while self:at() do
-		local v = self:at().value
+		local v = (self:at() :: token).value
 		if v == "+" or v == "-" then
 			local op = self:consume().value
 			local right = self:parseMultiplicative()
-			left = ast.binaryExpression(left, op, right)
+			left = ast.binaryExpression(left, op, right) :: expression
 		else
 			break
 		end
