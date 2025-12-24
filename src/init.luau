@@ -9,7 +9,7 @@ local evaluator = require("@self/core/evaluator")
 local source = [[
 set a = 5
 set b = 3
-set c = a > 3
+set c = a < 3
 c
 ]]
 local tokens = lexer.tokenise(source)
