@@ -157,7 +157,7 @@ end
 
 local function run(programNode: program | expression): runtimeValue
 	local globalEnv = environment.new(nil)
-	return evaluate(programNode, globalEnv)
+	return evaluate(programNode :: expression, globalEnv)
 end
 
 return {
