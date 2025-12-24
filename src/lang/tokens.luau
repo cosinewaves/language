@@ -4,6 +4,7 @@ export type tokenTypes = {
 	NUMBER: string,
 	IDENTIFIER: string,
 	STRING_LITERAL: string,
+	BOOLEAN_LITERAL: string,
 	SET: string,
 	BINARY_OPERATOR: string,
 	EQUALS: string,
@@ -15,7 +16,7 @@ return {
 	NUMBER = "NUMBER",
 	IDENTIFIER = "IDENTIFIER",
 	STRING_LITERAL = "STRING_LITERAL",
-
+	BOOLEAN_LITERAL = "BOOLEAN_LITERAL",
 	SET = "SET",
 
 	BINARY_OPERATOR = "BINARY_OPERATOR",

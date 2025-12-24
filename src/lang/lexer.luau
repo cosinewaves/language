@@ -51,16 +51,23 @@ local function tokenise(source: string): { token }
 			tokens[#tokens + 1] = makeToken(tokensTbl.NUMBER, value)
 
 		-- identifiers / keywords
+		-- identifiers / keywords / boolean literals
 		elseif util.isAlpha(char) then
 			local start = i
 			while i <= length and util.isAlpha(source:sub(i, i)) do
 				i += 1
 			end
+
 			local value = source:sub(start, i - 1)
-			local keywordType = keywords[value]
-			if keywordType then
-				tokens[#tokens + 1] = makeToken(keywordType, value)
+
+			-- check if the value is a keyword or boolean literal
+			local tokenType = keywords[value]
+
+			if tokenType then
+				-- If it's a keyword or boolean literal, use the keyword token type
+				tokens[#tokens + 1] = makeToken(tokenType, value)
 			else
+				-- Otherwise, it's a user-defined identifier
 				tokens[#tokens + 1] = makeToken(tokensTbl.IDENTIFIER, value)
 			end
 		elseif char == '"' or char == "'" then

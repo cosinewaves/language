@@ -169,6 +169,12 @@ function parser.parsePrimaryExpression(self: parser): expression
 		return expr
 	end
 
+	if t.type == tokens.BOOLEAN_LITERAL then
+		self:consume()
+		local value = t.value == "true"
+		return ast.booleanLiteral(value) :: expression
+	end
+
 	-- string literal
 	if t.type == tokens.STRING_LITERAL then
 		self:consume()
