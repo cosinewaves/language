@@ -22,36 +22,23 @@ export type parser = {
 	parseProgram: (self: parser) -> program,
 	parseStatement: (self: parser) -> statement,
 	parseVariableDeclaration: (self: parser) -> statement,
-	parseExpression: (self: parser) -> expression,
-	parseBinaryExpression: (self: parser, minPrecedence: number?) -> expression,
-	parsePrimaryExpression: (self: parser) -> expression,
-	parseUnaryExpression: (self: parser) -> expression,
-}
 
--- binary precedence table
-local PRECEDENCE = {
-	["or"] = 0,
-	["and"] = 1,
-	["=="] = 2,
-	["!="] = 2,
-	["<"] = 2,
-	[">"] = 2,
-	["<="] = 2,
-	[">="] = 2,
-	["+"] = 3,
-	["-"] = 3,
-	["*"] = 4,
-	["/"] = 4,
-	["%"] = 4,
-	["^"] = 5,
+	parseExpression: (self: parser) -> expression,
+	parseOr: (self: parser) -> expression,
+	parseAnd: (self: parser) -> expression,
+	parseComparison: (self: parser) -> expression,
+	parseAdditive: (self: parser) -> expression,
+	parseMultiplicative: (self: parser) -> expression,
+	parseUnary: (self: parser) -> expression,
+	parsePrimary: (self: parser) -> expression,
 }
 
 local parser = {}
 parser.__index = parser
 
-function parser.new(tokens: { token }): parser
+function parser.new(tokensList: { token }): parser
 	return setmetatable({
-		tokens = tokens,
+		tokens = tokensList,
 		position = 1,
 	}, parser) :: parser
 end
@@ -65,9 +52,9 @@ function parser.eof(self: parser): boolean
 end
 
 function parser.consume(self: parser): token
-	local current = self:at()
+	local t = self:at()
 	self.position += 1
-	return current :: token
+	return t :: token
 end
 
 function parser.expect(self: parser, tokenType: string, err: string): token
@@ -78,43 +65,42 @@ function parser.expect(self: parser, tokenType: string, err: string): token
 	return self:consume()
 end
 
--- top-level program parser
 function parser.parseProgram(self: parser): program
 	local body: { statement } = {}
+
 	while not self:eof() do
 		body[#body + 1] = self:parseStatement()
 	end
+
 	return ast.program(body)
 end
 
--- parse statements: variable declarations or expressions
 function parser.parseStatement(self: parser): statement
 	local t = self:at()
 	if not t then
-		error("(parser.parseStatement) unexpected end of input")
+		error("(parser.parseStatement) unexpected EOF")
 	end
 
 	if t.type == tokens.SET then
 		return self:parseVariableDeclaration()
 	end
 
-	-- parse as expression (may be assignment)
 	return self:parseExpression()
 end
 
 function parser.parseVariableDeclaration(self: parser): statement
-	self:consume() -- consume 'set'
+	self:consume() -- set
 
-	local name = self:expect(tokens.IDENTIFIER, "(parser.parseVariableDeclaration) expected identifier after 'set'")
-	self:expect(tokens.EQUALS, "(parser.parseVariableDeclaration) expected '=' after identifier")
+	local name = self:expect(tokens.IDENTIFIER, "(parser.parseVariableDeclaration) expected identifier")
+
+	self:expect(tokens.EQUALS, "(parser.parseVariableDeclaration) expected '='")
 
 	local value = self:parseExpression()
 	return ast.variableDeclaration(ast.identifier(name.value), value) :: statement
 end
 
--- expression parser supports top-level assignments
 function parser.parseExpression(self: parser): expression
-	local expr = self:parseBinaryExpression()
+	local expr = self:parseOr()
 
 	-- assignment
 	local t = self:at()
@@ -127,60 +113,118 @@ function parser.parseExpression(self: parser): expression
 	return expr
 end
 
--- binary expressions with precedence climbing
-function parser.parseBinaryExpression(self: parser, minPrecedence: number?): expression
-	minPrecedence = minPrecedence or 0
-	local left = self:parseUnaryExpression()
+-- or
+function parser.parseOr(self: parser): expression
+	local left = self:parseAnd()
 
-	while true do
-		local t = self:at()
-		if not t then
-			break
-		end
-
-		local op = t.value
-		local prec = PRECEDENCE[op] or -1
-		if prec < minPrecedence then
-			break
-		end
-
-		if
-			t.type ~= tokens.BINARY_OPERATOR
-			and not (op == "and" or op == "or")
-			and not (op == "==" or op == "!=" or op == "<" or op == ">" or op == "<=" or op == ">=")
-		then
-			break
-		end
-
-		self:consume()
-		local right = self:parseBinaryExpression(prec + 1)
+	while self:at() and (self:at() :: token).type == tokens.OR do
+		local op = self:consume().value
+		local right = self:parseAnd()
 		left = ast.binaryExpression(left, op, right) :: expression
 	end
 
 	return left
 end
 
--- unary expressions: only 'not' for now
-function parser.parseUnaryExpression(self: parser): expression
-	local t = self:at()
-	if t and t.type == tokens.NOT then
+-- and
+function parser.parseAnd(self: parser): expression
+	local left = self:parseComparison()
+
+	while self:at() and (self:at() :: token).type == tokens.AND do
 		local op = self:consume().value
-		local argument = self:parseUnaryExpression()
-		return ast.unaryExpression(op, argument) :: expression
+		local right = self:parseComparison()
+		left = ast.binaryExpression(left, op, right) :: expression
 	end
-	return self:parsePrimaryExpression()
+
+	return left
 end
 
--- primary expressions
-function parser.parsePrimaryExpression(self: parser): expression
+-- == != < > <= >=
+function parser.parseComparison(self: parser): expression
+	local left = self:parseAdditive()
+
+	while self:at() do
+		local v = (self:at() :: token).value
+		if v == "==" or v == "!=" or v == "<" or v == ">" or v == "<=" or v == ">=" then
+			local op = self:consume().value
+			local right = self:parseAdditive()
+			left = ast.binaryExpression(left, op, right)
+		else
+			break
+		end
+	end
+
+	return left
+end
+
+-- + -
+function parser.parseAdditive(self: parser): expression
+	local left = self:parseMultiplicative()
+
+	while self:at() do
+		local v = self:at().value
+		if v == "+" or v == "-" then
+			local op = self:consume().value
+			local right = self:parseMultiplicative()
+			left = ast.binaryExpression(left, op, right)
+		else
+			break
+		end
+	end
+
+	return left
+end
+
+-- * / %
+function parser.parseMultiplicative(self: parser): expression
+	local left = self:parseUnary()
+
+	while self:at() do
+		local v = (self:at() :: token).value
+		if v == "*" or v == "/" or v == "%" then
+			local op = self:consume().value
+			local right = self:parseUnary()
+			left = ast.binaryExpression(left, op, right) :: expression
+		else
+			break
+		end
+	end
+
+	return left
+end
+
+-- unary: not
+function parser.parseUnary(self: parser): expression
+	local t = self:at()
+
+	if t and t.type == tokens.NOT then
+		local op = self:consume().value
+		local expr = self:parseUnary()
+		return ast.unaryExpression(op, expr) :: expression
+	end
+
+	return self:parsePrimary()
+end
+
+function parser.parsePrimary(self: parser): expression
 	local t = self:at()
 	if not t then
-		error("(parser.parsePrimaryExpression) unexpected end of input")
+		error("(parser.parsePrimary) unexpected EOF")
 	end
 
 	if t.type == tokens.NUMBER then
 		self:consume()
 		return ast.numericLiteral(tonumber(t.value) :: number) :: expression
+	end
+
+	if t.type == tokens.STRING_LITERAL then
+		self:consume()
+		return ast.stringLiteral(t.value) :: expression
+	end
+
+	if t.type == tokens.BOOLEAN_LITERAL then
+		self:consume()
+		return ast.booleanLiteral(t.value == "true") :: expression
 	end
 
 	if t.type == tokens.IDENTIFIER then
@@ -191,28 +235,15 @@ function parser.parsePrimaryExpression(self: parser): expression
 	if t.type == tokens.OPEN_PARENTHESIS then
 		self:consume()
 		local expr = self:parseExpression()
-		self:expect(tokens.CLOSE_PARENTHESIS, "(parser.parsePrimaryExpression) expected closing parenthesis")
+		self:expect(tokens.CLOSE_PARENTHESIS, "expected ')'")
 		return expr
 	end
 
-	if t.type == tokens.BOOLEAN_LITERAL then
-		self:consume()
-		local value = t.value == "true"
-		return ast.booleanLiteral(value) :: expression
-	end
-
-	if t.type == tokens.STRING_LITERAL then
-		self:consume()
-		return ast.stringLiteral(t.value) :: expression
-	end
-
-	error(string.format("(parser.parsePrimaryExpression) unexpected token: %s (%s)", t.type :: string, t.value))
+	error(string.format("(parser.parsePrimary) unexpected token: %s (%s)", t.type, t.value))
 end
 
--- entry point
-local function parse(tokensList: { token }): program
-	local p = parser.new(tokensList)
-	return p:parseProgram()
+local function parse(tokenList: { token }): program
+	return parser.new(tokenList):parseProgram()
 end
 
 return {

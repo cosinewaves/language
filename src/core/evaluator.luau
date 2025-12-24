@@ -19,16 +19,14 @@ type variableDeclaration = ast.variableDeclaration
 type assignment = ast.assignment
 
 local function evaluate(node: statement | expression, env: environment): runtimeValue
-	-- program
 	if node.kind == ast.nodeTypes.Program then
-		local result: runtimeValue = 0
+		local result: runtimeValue = false
 		for _, stmt in (node :: program).body do
 			result = evaluate(stmt, env)
 		end
 		return result
 	end
 
-	-- variable declaration
 	if node.kind == ast.nodeTypes.VariableDeclaration then
 		local decl = node :: variableDeclaration
 		local value = evaluate(decl.value, env)
@@ -36,54 +34,82 @@ local function evaluate(node: statement | expression, env: environment): runtime
 		return value
 	end
 
-	-- assignment
 	if node.kind == ast.nodeTypes.Assignment then
 		local assign = node :: assignment
 		local value = evaluate(assign.value, env)
-		-- update existing variable
-		env:lookup(assign.identifier.symbol) -- will error if undeclared
-		env:declare(assign.identifier.symbol, value) -- overwrite in current env
+
+		-- ensure variable exists
+		env:assign(assign.identifier.symbol, value)
 		return value
 	end
 
-	-- numeric literal
 	if node.kind == ast.nodeTypes.NumericLiteral then
 		return (node :: numericLiteral).value
 	end
 
-	-- string literal
 	if node.kind == ast.nodeTypes.StringLiteral then
 		return (node :: stringLiteral).value
 	end
 
-	-- boolean literal
 	if node.kind == ast.nodeTypes.BooleanLiteral then
 		return (node :: booleanLiteral).value
 	end
 
-	-- identifier
 	if node.kind == ast.nodeTypes.Identifier then
 		return env:lookup((node :: identifier).symbol)
 	end
 
-	-- unary expression (not)
 	if node.kind == ast.nodeTypes.UnaryExpr then
 		local expr = node :: unaryExpr
-		local val = evaluate(expr.argument, env)
+		local value = evaluate(expr.argument, env)
+
 		if expr.operator == "not" then
-			return not val
+			if type(value) ~= "boolean" then
+				error(`(evaluator.evaluate) 'not' expects boolean, got {type(value)}`)
+			end
+			return not value
 		end
+
 		error("(evaluator.evaluate) unknown unary operator: " .. expr.operator)
 	end
 
-	-- binary expression
 	if node.kind == ast.nodeTypes.BinaryExpr then
 		local expr = node :: binaryExpr
-		local left = evaluate(expr.left, env)
-		local right = evaluate(expr.right, env)
 		local op = expr.operator
 
-		-- arithmetic for numbers
+		if op == "and" then
+			local left = evaluate(expr.left, env)
+			if type(left) ~= "boolean" then
+				error("(evaluator.evaluate) 'and' expects booleans")
+			end
+			if not left then
+				return false
+			end
+			local right = evaluate(expr.right, env)
+			if type(right) ~= "boolean" then
+				error("(evaluator.evaluate) 'and' expects booleans")
+			end
+			return right
+		end
+
+		if op == "or" then
+			local left = evaluate(expr.left, env)
+			if type(left) ~= "boolean" then
+				error("(evaluator.evaluate) 'or' expects booleans")
+			end
+			if left then
+				return true
+			end
+			local right = evaluate(expr.right, env)
+			if type(right) ~= "boolean" then
+				error("(evaluator.evaluate) 'or' expects booleans")
+			end
+			return right
+		end
+
+		local left = evaluate(expr.left, env)
+		local right = evaluate(expr.right, env)
+
 		if type(left) == "number" and type(right) == "number" then
 			if op == "+" then
 				return left + right
@@ -109,27 +135,9 @@ local function evaluate(node: statement | expression, env: environment): runtime
 				return left <= right
 			elseif op == ">=" then
 				return left >= right
-			else
-				error("(evaluator.evaluate) unknown numeric operator: " .. op)
 			end
 		end
 
-		-- boolean operators
-		if type(left) == "boolean" and type(right) == "boolean" then
-			if op == "and" then
-				return left and right
-			elseif op == "or" then
-				return left or right
-			elseif op == "==" then
-				return left == right
-			elseif op == "!=" then
-				return left ~= right
-			else
-				error("(evaluator.evaluate) unknown boolean operator: " .. op)
-			end
-		end
-
-		-- string concatenation
 		if type(left) == "string" and type(right) == "string" then
 			if op == "+" then
 				return left .. right
@@ -137,27 +145,26 @@ local function evaluate(node: statement | expression, env: environment): runtime
 				return left == right
 			elseif op == "!=" then
 				return left ~= right
-			else
-				error("(evaluator.evaluate) invalid operator for strings: " .. op)
 			end
 		end
 
-		error(
-			"(evaluator.evaluate) invalid binary operation between "
-				.. type(left)
-				.. " and "
-				.. type(right)
-				.. " with operator "
-				.. op
-		)
+		if type(left) == "boolean" and type(right) == "boolean" then
+			if op == "==" then
+				return left == right
+			elseif op == "!=" then
+				return left ~= right
+			end
+		end
+
+		error("(evaluator.evaluate) invalid operation: " .. type(left) .. " " .. op .. " " .. type(right))
 	end
 
 	error("(evaluator.evaluate) unknown AST node: " .. tostring(node.kind))
 end
 
-local function run(programNode: program | expression): runtimeValue
+local function run(node: program): runtimeValue
 	local globalEnv = environment.new(nil)
-	return evaluate(programNode :: expression, globalEnv)
+	return evaluate(node :: expression, globalEnv)
 end
 
 return {

@@ -7,10 +7,10 @@ local evaluator = require("@self/core/evaluator")
 
 --local source = fs.readFile("./examples/test1.lang")
 local source = [[
-set a = 5
-set b = 3
-set c = a < 3
-c
+set a = 10
+set b = 5
+set c = 20
+set d = not (not (c > a))
 ]]
 local tokens = lexer.tokenise(source)
 local ast = parser.parse(tokens)
