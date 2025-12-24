@@ -1,0 +1,3 @@
+set a = true
+set b = false
+a

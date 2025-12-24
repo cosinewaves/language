@@ -1,6 +1,6 @@
 --!strict
 
-local ast = require("./ast")
+local ast = require("../core/ast")
 local lexer = require("./lexer")
 local tokens = require("./tokens")
 
