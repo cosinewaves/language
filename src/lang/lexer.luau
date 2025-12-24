@@ -6,6 +6,8 @@ local keywords = require("./keywords")
 
 export type token = { type: string, value: string }
 
+local binaryOperators = { "+", "-", "*", "/" }
+
 local function makeToken(tokenType: string, value: string): token
 	return {
 		type = tokenType,
@@ -32,7 +34,7 @@ local function tokenise(source: string): { token }
 		elseif char == ")" then
 			tokens[#tokens + 1] = makeToken(tokensTbl.CLOSE_PARENTHESIS, char)
 			i += 1
-		elseif char == "+" or char == "-" or char == "*" or char == "/" then
+		elseif table.find(binaryOperators, char) then
 			tokens[#tokens + 1] = makeToken(tokensTbl.BINARY_OPERATOR, char)
 			i += 1
 		elseif char == "=" then
