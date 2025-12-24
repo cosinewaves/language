@@ -21,6 +21,7 @@ export type parser = {
 
 	parseProgram: (self: parser) -> program,
 	parseStatement: (self: parser) -> statement,
+	parseAssignment: (self: parser) -> statement,
 	parseExpression: (self: parser) -> expression,
 	parseBinaryExpression: (self: parser) -> expression,
 	parsePrimaryExpression: (self: parser) -> expression,
@@ -72,11 +73,26 @@ function parser.parseProgram(self: parser): program
 end
 
 function parser.parseStatement(self: parser): statement
-	if self:at().type == tokens.SET then
+	local t = self:at()
+
+	if t.type == tokens.SET then
 		return self:parseVariableDeclaration()
+	elseif t.type == tokens.IDENTIFIER then
+		-- lookahead for '='
+		if self.tokens[self.position + 1] and self.tokens[self.position + 1].type == tokens.EQUALS then
+			return self:parseAssignment()
+		end
 	end
 
 	return self:parseExpression()
+end
+
+function parser.parseAssignment(self: parser): statement
+	local name = self:expect(tokens.IDENTIFIER, "expected identifier for assignment")
+	self:expect(tokens.EQUALS, "expected '=' in assignment")
+
+	local value = self:parseExpression()
+	return ast.assignment(ast.identifier(name.value), value) :: statement
 end
 
 function parser.parseVariableDeclaration(self: parser): statement

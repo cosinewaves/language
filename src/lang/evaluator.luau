@@ -64,6 +64,19 @@ local function evaluate(node: program, env: environment): runtimeValue?
 		error("unknown operator: " .. expr.operator)
 	end
 
+	-- assignment
+	if node.kind == ast.nodeTypes.Assignment then
+		local assign = node :: ast.assignment
+		local value = evaluate(assign.value, env)
+		-- update existing variable
+		if env.values[assign.identifier.symbol] ~= nil then
+			env.values[assign.identifier.symbol] = value
+		else
+			error("assignment to undeclared variable: " .. assign.identifier.symbol)
+		end
+		return value
+	end
+
 	error("unknown AST node: " .. tostring(node.kind))
 end
 

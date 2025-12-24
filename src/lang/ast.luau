@@ -6,6 +6,7 @@ local nodeTypes = {
 	Identifier = "Identifier",
 	BinaryExpr = "BinaryExpr",
 	VariableDeclaration = "VariableDeclaration",
+	Assignment = "Assignment",
 }
 
 export type statement = {
@@ -38,6 +39,12 @@ export type numericLiteral = {
 
 export type variableDeclaration = {
 	kind: "VariableDeclaration",
+	identifier: identifier,
+	value: expression,
+}
+
+export type assignment = {
+	kind: "Assignment",
 	identifier: identifier,
 	value: expression,
 }
@@ -80,12 +87,20 @@ local function variableDeclaration(id: identifier, value: expression): variableD
 	} :: variableDeclaration
 end
 
+local function assignment(id: identifier, value: expression): assignment
+	return {
+		kind = nodeTypes.Assignment,
+		identifier = id,
+		value = value,
+	} :: assignment
+end
+
 return {
 	nodeTypes = nodeTypes,
-
 	program = program,
 	binaryExpression = binaryExpression,
 	identifier = identifier,
 	numericLiteral = numericLiteral,
 	variableDeclaration = variableDeclaration,
+	assignment = assignment,
 }
