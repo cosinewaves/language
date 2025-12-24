@@ -1,0 +1,23 @@
+--!strict
+
+export type tokenTypes = {
+	NUMBER: string,
+	IDENTIFIER: string,
+	SET: string,
+	BINARY_OPERATOR: string,
+	EQUALS: string,
+	OPEN_PARENTHESIS: string,
+	CLOSE_PARENTHESIS: string,
+}
+
+return {
+	NUMBER = "NUMBER",
+	IDENTIFIER = "IDENTIFIER",
+
+	SET = "SET",
+
+	BINARY_OPERATOR = "BINARY_OPERATOR",
+	EQUALS = "EQUALS",
+	OPEN_PARENTHESIS = "OPEN_PARENTHESIS",
+	CLOSE_PARENTHESIS = "CLOSE_PARENTHESIS",
+} :: tokenTypes

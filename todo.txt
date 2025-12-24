@@ -1,0 +1,5 @@
+solid arithmetic & booleans
+control flow, if & loops
+functions and local scopes
+runtime correctness & error handling
+debugging, REPL, user-friendly features
