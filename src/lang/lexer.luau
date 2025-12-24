@@ -63,6 +63,43 @@ local function tokenise(source: string): { token }
 			else
 				tokens[#tokens + 1] = makeToken(tokensTbl.IDENTIFIER, value)
 			end
+		elseif char == '"' or char == "'" then
+			local quote = char
+			local start = i + 1
+			i += 1
+			local str = ""
+
+			while i <= length do
+				local c = source:sub(i, i)
+				if c == quote then
+					break
+				end
+
+				-- optional: handle escape sequences
+				if c == "\\" then
+					i += 1
+					local nextChar = source:sub(i, i)
+					if nextChar == "n" then
+						str ..= "\n"
+					elseif nextChar == "t" then
+						str ..= "\t"
+					else
+						str ..= nextChar
+					end
+				else
+					str ..= c
+				end
+				i += 1
+			end
+
+			if i > length then
+				error("unterminated string literal")
+			end
+
+			-- consume closing quote
+			i += 1
+
+			tokens[#tokens + 1] = makeToken(tokensTbl.STRING_LITERAL, str)
 
 		-- unknown characters
 		else

@@ -169,6 +169,12 @@ function parser.parsePrimaryExpression(self: parser): expression
 		return expr
 	end
 
+	-- string literal
+	if t.type == tokens.STRING_LITERAL then
+		self:consume()
+		return ast.stringLiteral(t.value) :: expression
+	end
+
 	error(string.format("Unexpected token: %s (%s)", t.type :: string, t.value))
 end
 
