@@ -70,6 +70,10 @@ local function evaluate(node: statement | expression, env: environment): runtime
 			return left * right
 		elseif expr.operator == "/" then
 			return left / right
+		elseif expr.operator == "%" then
+			return left % right
+		elseif expr.operator == "^" then
+			return left ^ right
 		else
 			error("unknown operator: " .. expr.operator)
 		end

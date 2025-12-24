@@ -6,7 +6,7 @@ local keywords = require("./keywords")
 
 export type token = { type: string, value: string }
 
-local binaryOperators = { "+", "-", "*", "/" }
+local binaryOperators = { "+", "-", "*", "/", "^", "%" }
 
 local function makeToken(tokenType: string, value: string): token
 	return {

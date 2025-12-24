@@ -33,6 +33,8 @@ local PRECEDENCE = {
 	["-"] = 1,
 	["*"] = 2,
 	["/"] = 2,
+	["%"] = 2, -- modulo same as multiplication
+	["^"] = 3, -- exponentiation higher
 }
 
 local parser = {}
