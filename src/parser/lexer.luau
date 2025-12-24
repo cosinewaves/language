@@ -50,7 +50,6 @@ local function tokenise(source: string): { token }
 			local value = source:sub(start, i - 1)
 			tokens[#tokens + 1] = makeToken(tokensTbl.NUMBER, value)
 
-		-- identifiers / keywords
 		-- identifiers / keywords / boolean literals
 		elseif util.isAlpha(char) then
 			local start = i
@@ -107,8 +106,30 @@ local function tokenise(source: string): { token }
 
 			tokens[#tokens + 1] = makeToken(tokensTbl.STRING_LITERAL, str)
 
-		-- unknown characters
-		else
+		-- comparison operators in your lexer loop
+		elseif (char == "=" :: string) and source:sub(i + 1, i + 1) == "=" then
+			tokens[#tokens + 1] = makeToken(tokensTbl.EQ, "==")
+			i += 2
+		elseif char == "!" and source:sub(i + 1, i + 1) == "=" then
+			tokens[#tokens + 1] = makeToken(tokensTbl.NE, "!=")
+			i += 2
+		elseif char == "<" then
+			if source:sub(i + 1, i + 1) == "=" then
+				tokens[#tokens + 1] = makeToken(tokensTbl.LTE, "<=")
+				i += 2
+			else
+				tokens[#tokens + 1] = makeToken(tokensTbl.LT, "<")
+				i += 1
+			end
+		elseif char == ">" then
+			if source:sub(i + 1, i + 1) == "=" then
+				tokens[#tokens + 1] = makeToken(tokensTbl.GTE, ">=")
+				i += 2
+			else
+				tokens[#tokens + 1] = makeToken(tokensTbl.GT, ">")
+				i += 1
+			end
+		else -- unknown characters
 			error(string.format("(lexer.tokenise) unrecognized character '%s' (%d)", char, string.byte(char)))
 		end
 	end

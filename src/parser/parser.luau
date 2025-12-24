@@ -25,16 +25,25 @@ export type parser = {
 	parseExpression: (self: parser) -> expression,
 	parseBinaryExpression: (self: parser, minPrecedence: number?) -> expression,
 	parsePrimaryExpression: (self: parser) -> expression,
+	parseUnaryExpression: (self: parser) -> expression,
 }
 
--- binary expressions with precedence
+-- binary precedence table
 local PRECEDENCE = {
-	["+"] = 1,
-	["-"] = 1,
-	["*"] = 2,
-	["/"] = 2,
-	["%"] = 2, -- modulo same as multiplication
-	["^"] = 3, -- exponentiation higher
+	["or"] = 0,
+	["and"] = 1,
+	["=="] = 2,
+	["!="] = 2,
+	["<"] = 2,
+	[">"] = 2,
+	["<="] = 2,
+	[">="] = 2,
+	["+"] = 3,
+	["-"] = 3,
+	["*"] = 4,
+	["/"] = 4,
+	["%"] = 4,
+	["^"] = 5,
 }
 
 local parser = {}
@@ -69,7 +78,7 @@ function parser.expect(self: parser, tokenType: string, err: string): token
 	return self:consume()
 end
 
--- top level parser
+-- top-level program parser
 function parser.parseProgram(self: parser): program
 	local body: { statement } = {}
 	while not self:eof() do
@@ -78,7 +87,7 @@ function parser.parseProgram(self: parser): program
 	return ast.program(body)
 end
 
--- set declarations or expressions/assignments
+-- parse statements: variable declarations or expressions
 function parser.parseStatement(self: parser): statement
 	local t = self:at()
 	if not t then
@@ -89,14 +98,10 @@ function parser.parseStatement(self: parser): statement
 		return self:parseVariableDeclaration()
 	end
 
-	-- parse as expression
-	local expr = self:parseExpression()
-
-	-- if expression is an assignment, it's already handled in parseExpression
-	return expr
+	-- parse as expression (may be assignment)
+	return self:parseExpression()
 end
 
--- variable declaration so like set x = expr
 function parser.parseVariableDeclaration(self: parser): statement
 	self:consume() -- consume 'set'
 
@@ -107,11 +112,11 @@ function parser.parseVariableDeclaration(self: parser): statement
 	return ast.variableDeclaration(ast.identifier(name.value), value) :: statement
 end
 
--- expression parser which handles assignment
+-- expression parser supports top-level assignments
 function parser.parseExpression(self: parser): expression
 	local expr = self:parseBinaryExpression()
 
-	-- top-level assignment
+	-- assignment
 	local t = self:at()
 	if t and t.type == tokens.EQUALS and expr.kind == ast.nodeTypes.Identifier then
 		self:consume()
@@ -122,22 +127,32 @@ function parser.parseExpression(self: parser): expression
 	return expr
 end
 
+-- binary expressions with precedence climbing
 function parser.parseBinaryExpression(self: parser, minPrecedence: number?): expression
 	minPrecedence = minPrecedence or 0
-	local left = self:parsePrimaryExpression()
+	local left = self:parseUnaryExpression()
 
 	while true do
 		local t = self:at()
-		if not t or t.type ~= tokens.BINARY_OPERATOR then
+		if not t then
 			break
 		end
 
-		local prec = PRECEDENCE[t.value] or 0
+		local op = t.value
+		local prec = PRECEDENCE[op] or -1
 		if prec < minPrecedence then
 			break
 		end
 
-		local op = self:consume().value
+		if
+			t.type ~= tokens.BINARY_OPERATOR
+			and not (op == "and" or op == "or")
+			and not (op == "==" or op == "!=" or op == "<" or op == ">" or op == "<=" or op == ">=")
+		then
+			break
+		end
+
+		self:consume()
 		local right = self:parseBinaryExpression(prec + 1)
 		left = ast.binaryExpression(left, op, right) :: expression
 	end
@@ -145,7 +160,18 @@ function parser.parseBinaryExpression(self: parser, minPrecedence: number?): exp
 	return left
 end
 
--- primary expressions numbers, identifiers, parentheses
+-- unary expressions: only 'not' for now
+function parser.parseUnaryExpression(self: parser): expression
+	local t = self:at()
+	if t and t.type == tokens.NOT then
+		local op = self:consume().value
+		local argument = self:parseUnaryExpression()
+		return ast.unaryExpression(op, argument) :: expression
+	end
+	return self:parsePrimaryExpression()
+end
+
+-- primary expressions
 function parser.parsePrimaryExpression(self: parser): expression
 	local t = self:at()
 	if not t then
@@ -175,7 +201,6 @@ function parser.parsePrimaryExpression(self: parser): expression
 		return ast.booleanLiteral(value) :: expression
 	end
 
-	-- string literal
 	if t.type == tokens.STRING_LITERAL then
 		self:consume()
 		return ast.stringLiteral(t.value) :: expression

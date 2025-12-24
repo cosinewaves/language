@@ -7,6 +7,7 @@ local nodeTypes = {
 	BooleanLiteral = "BooleanLiteral",
 	Identifier = "Identifier",
 	BinaryExpr = "BinaryExpr",
+	UnaryExpr = "UnaryExpr", -- for future 'not' operator
 	VariableDeclaration = "VariableDeclaration",
 	Assignment = "Assignment",
 }
@@ -20,7 +21,8 @@ export type numericLiteral = { kind: "NumericLiteral", value: number }
 export type stringLiteral = { kind: "StringLiteral", value: string }
 export type booleanLiteral = { kind: "BooleanLiteral", value: boolean }
 export type identifier = { kind: "Identifier", symbol: string }
-export type binaryExpr = { kind: "BinaryExpr", left: expression, right: expression, operator: string }
+export type binaryExpr = { kind: "BinaryExpr", left: expression, operator: string, right: expression }
+export type unaryExpr = { kind: "UnaryExpr", operator: string, argument: expression }
 export type variableDeclaration = { kind: "VariableDeclaration", identifier: identifier, value: expression }
 export type assignment = { kind: "Assignment", identifier: identifier, value: expression }
 
@@ -48,6 +50,10 @@ local function binaryExpression(left: expression, operator: string, right: expre
 	return { kind = nodeTypes.BinaryExpr, left = left, operator = operator, right = right }
 end
 
+local function unaryExpression(operator: string, argument: expression): unaryExpr
+	return { kind = nodeTypes.UnaryExpr, operator = operator, argument = argument }
+end
+
 local function variableDeclaration(id: identifier, value: expression): variableDeclaration
 	return { kind = nodeTypes.VariableDeclaration, identifier = id, value = value }
 end
@@ -64,6 +70,7 @@ return {
 	booleanLiteral = booleanLiteral,
 	identifier = identifier,
 	binaryExpression = binaryExpression,
+	unaryExpression = unaryExpression,
 	variableDeclaration = variableDeclaration,
 	assignment = assignment,
 }
