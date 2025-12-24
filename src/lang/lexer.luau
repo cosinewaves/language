@@ -65,7 +65,6 @@ local function tokenise(source: string): { token }
 			end
 		elseif char == '"' or char == "'" then
 			local quote = char
-			local start = i + 1
 			i += 1
 			local str = ""
 
