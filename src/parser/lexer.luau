@@ -27,18 +27,15 @@ local function tokenise(source: string): { token }
 		if util.isWhitespace(char) then
 			i += 1
 
-		-- single-character tokens
+		-- parentheses
 		elseif char == "(" then
 			tokens[#tokens + 1] = makeToken(tokensTbl.OPEN_PARENTHESIS, char)
 			i += 1
 		elseif char == ")" then
 			tokens[#tokens + 1] = makeToken(tokensTbl.CLOSE_PARENTHESIS, char)
 			i += 1
-		elseif table.find(binaryOperators, char) then
-			tokens[#tokens + 1] = makeToken(tokensTbl.BINARY_OPERATOR, char)
-			i += 1
 
-		-- two-character comparison operators should be checked before single '=':
+		-- two-character comparison operators and comment starts (check before single-char '=' and binary operators)
 		elseif char == "=" and source:sub(i + 1, i + 1) == "=" then
 			tokens[#tokens + 1] = makeToken(tokensTbl.EQ, "==")
 			i += 2
@@ -51,7 +48,34 @@ local function tokenise(source: string): { token }
 		elseif char == ">" and source:sub(i + 1, i + 1) == "=" then
 			tokens[#tokens + 1] = makeToken(tokensTbl.GTE, ">=")
 			i += 2
-		-- single-character '=' and single <, >:
+
+		-- comments:
+		-- single-line: --
+		-- block: /* ... */
+		elseif char == "-" and source:sub(i + 1, i + 1) == "-" then
+			-- consume until end of line
+			i += 2
+			while i <= length and source:sub(i, i) ~= "\n" do
+				i += 1
+			end
+			-- leave newline to be skipped by whitespace handler on next loop
+		elseif char == "/" and source:sub(i + 1, i + 1) == "*" then
+			-- block comment: consume until '*/'
+			i += 2
+			local closed = false
+			while i <= length - 1 do
+				if source:sub(i, i + 1) == "*/" then
+					closed = true
+					i += 2
+					break
+				end
+				i += 1
+			end
+			if not closed then
+				error("(lexer.tokenise) unterminated block comment")
+			end
+
+		-- single-character '=' and single <, >
 		elseif char == "=" then
 			tokens[#tokens + 1] = makeToken(tokensTbl.EQUALS, char)
 			i += 1
@@ -60,6 +84,11 @@ local function tokenise(source: string): { token }
 			i += 1
 		elseif char == ">" then
 			tokens[#tokens + 1] = makeToken(tokensTbl.GT, char)
+			i += 1
+
+		-- binary operators (single-char)
+		elseif table.find(binaryOperators, char) then
+			tokens[#tokens + 1] = makeToken(tokensTbl.BINARY_OPERATOR, char)
 			i += 1
 
 		-- numbers
@@ -90,6 +119,8 @@ local function tokenise(source: string): { token }
 				-- Otherwise, it's a user-defined identifier
 				tokens[#tokens + 1] = makeToken(tokensTbl.IDENTIFIER, value)
 			end
+
+		-- strings
 		elseif char == '"' or char == "'" then
 			local quote = char
 			i += 1
@@ -126,6 +157,7 @@ local function tokenise(source: string): { token }
 			i += 1
 
 			tokens[#tokens + 1] = makeToken(tokensTbl.STRING_LITERAL, str)
+
 		else -- unknown characters
 			error(string.format("(lexer.tokenise) unrecognized character '%s' (%d)", char, string.byte(char)))
 		end
