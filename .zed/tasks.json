@@ -3,4 +3,8 @@
     "label": "Compile and execute test.txt",
     "command": "cd src && lune run init.luau",
   },
+  {
+    "label": "Selene analysis",
+    "command": "selene src",
+  },
 ]
