@@ -1,0 +1,27 @@
+-- demonstrates basic arithmetic operations with floats
+
+set a = 10.5
+set b = 3.2
+
+-- addition
+set sum = a + b
+
+-- subtraction
+set difference = a - b
+
+-- multiplication
+set product = a * b
+
+-- division
+set quotient = a / b
+
+-- modulo
+set remainder = 10 % 3
+
+-- exponentiation
+set power = 2 ^ 8
+
+-- compound expression
+set result = (a + b) * 2 - 5
+
+result

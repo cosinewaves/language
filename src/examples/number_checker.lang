@@ -1,0 +1,17 @@
+-- demonstrates control flow with however clauses
+
+set num = 15
+
+set result = ""
+
+given (num % 15 == 0) then
+    result = "fizzbuzz"
+however (num % 3 == 0) then
+    result = "fizz"
+however (num % 5 == 0) then
+    result = "buzz"
+otherwise
+    result = "number"
+finish
+
+result

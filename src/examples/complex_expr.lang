@@ -1,0 +1,29 @@
+-- complex expressions with operator precedence
+-- demonstrates arithmetic, comparison, and logical operators
+
+set x = 10
+set y = 5
+set z = 3
+
+-- arithmetic with precedence
+set result1 = x + y * z    -- 10 + (5 * 3) = 25
+set result2 = (x + y) * z  -- (10 + 5) * 3 = 45
+set result3 = x ^ 2 + y    -- 100 + 5 = 105
+
+-- complex boolean expressions
+set isValid = x > 5 and y < 10
+set isSpecial = x == 10 or y == 3
+set combined = (x > 0 and y > 0) or z < 0
+
+-- chained comparisons with logical operators
+set inRange = x >= 5 and x <= 15
+set outOfRange = y < 0 or y > 100
+
+-- negation
+set notValid = not isValid
+set negative = -z
+
+-- final complex expression
+set complexResult = (x + y) * z - 10 / 2 + x % 3
+
+complexResult

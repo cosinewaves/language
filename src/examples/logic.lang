@@ -1,0 +1,31 @@
+-- logical operations with and, or, not
+
+set a = true
+set b = false
+
+-- and operator
+set result1 = a and b
+result1  -- false
+
+-- or operator
+set result2 = a or b
+result2  -- true
+
+-- not operator
+set result3 = not a
+result3  -- false
+
+-- combining logical operators
+set x = 5
+set y = 10
+set z = 15
+
+set inRange = x < y and y < z
+inRange  -- true
+
+set outOfRange = x > y or z < y
+outOfRange  -- false
+
+-- complex logical expression
+set isValid = (x > 0) and (y > 0) and not (z < 0)
+isValid  -- true

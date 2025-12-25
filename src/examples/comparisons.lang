@@ -1,0 +1,41 @@
+-- demonstrates comparison operators: ==, !=, <, >, <=, >=
+
+set a = 10
+set b = 5
+set c = 10
+
+-- equality
+set isEqual = a == c
+isEqual  -- true
+
+-- inequality
+set notEqual = a != b
+notEqual  -- true
+
+-- less than
+set lessThan = b < a
+lessThan  -- true
+
+-- greater than
+set greaterThan = a > b
+greaterThan  -- true
+
+-- less than or equal
+set lessOrEqual = a <= c
+lessOrEqual  -- true
+
+-- greater than or equal
+set greaterOrEqual = a >= b
+greaterOrEqual  -- true
+
+-- comparing strings
+set name1 = "alice"
+set name2 = "alice"
+set sameNames = name1 == name2
+sameNames  -- true
+
+-- comparing booleans
+set x = true
+set y = false
+set different = x != y
+different  -- true

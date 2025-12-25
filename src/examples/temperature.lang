@@ -1,0 +1,21 @@
+set celsius = 25
+set fahrenheit = 0
+
+-- Convert celsius to fahrenheit
+-- Formula: F = (C * 9/5) + 32
+fahrenheit = (celsius * 9 / 5) + 32
+
+-- Check temperature category
+set category = "unknown"
+
+given (fahrenheit < 32) then
+    category = "freezing"
+however (fahrenheit < 60) then
+    category = "cold"
+however (fahrenheit < 80) then
+    category = "comfortable"
+otherwise
+    category = "hot"
+finish
+
+category

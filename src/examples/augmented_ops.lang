@@ -1,0 +1,6 @@
+-- augmented assignment operators
+-- demonstrates +=, -=, *=, /=
+
+set counter = 10
+counter += 5  -- counter = counter + 5
+counter       -- 15

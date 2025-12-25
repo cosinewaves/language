@@ -1,0 +1,18 @@
+-- demonstrates using if statements inside other if statements
+
+set age = 25
+set hasLicense = true
+set result = "cannot drive"
+
+given (age >= 18) then
+    -- adult logic
+    given (hasLicense == true) then
+        result = "can drive"
+    otherwise
+        result = "adult but no license"
+    finish
+otherwise
+    result = "too young"
+finish
+
+result

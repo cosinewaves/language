@@ -1,0 +1,18 @@
+-- demonstrates control flow with multiple however branches
+
+set score = 85
+set grade = ""
+
+given (score >= 90) then
+    grade = "A"
+however (score >= 80) then
+    grade = "B"
+however (score >= 70) then
+    grade = "C"
+however (score >= 60) then
+    grade = "D"
+otherwise
+    grade = "F"
+finish
+
+grade

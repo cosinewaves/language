@@ -1,0 +1,25 @@
+-- basic arithmetic operations
+
+set a = 10
+set b = 3
+
+-- addition
+set sum = a + b
+
+-- subtraction
+set difference = a - b
+
+-- multiplication
+set product = a * b
+
+-- division
+set quotient = a / b
+
+-- modulo (remainder)
+set remainder = a % b
+
+-- exponentiation
+set power = 2 ^ 8
+
+-- result is the last expression
+power

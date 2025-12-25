@@ -1,0 +1,21 @@
+-- basic string literals
+set greeting = "Hello"
+set name = "World"
+
+-- string concatenation with +
+set message = greeting + " " + name
+message
+
+-- different quote styles
+set single = 'single quotes'
+set double = "double quotes"
+
+-- escape sequences
+set newline = "line one\nline two"
+set tab = "column1\tcolumn2"
+
+-- string comparison
+set same = "hello" == "hello"
+set different = "hello" != "world"
+
+same

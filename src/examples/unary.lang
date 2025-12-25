@@ -1,0 +1,13 @@
+-- unary minus (negation)
+set a = 5
+set b = -a
+b -- prints -5
+
+-- unary not (logical negation)
+set isTrue = true
+set isFalse = not isTrue
+isFalse -- prints false
+
+-- combined unary operators
+set x = not (5 > 3)
+x -- prints false
