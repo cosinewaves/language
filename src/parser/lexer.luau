@@ -157,7 +157,6 @@ local function tokenise(source: string): { token }
 			i += 1
 
 			tokens[#tokens + 1] = makeToken(tokensTbl.STRING_LITERAL, str)
-
 		else -- unknown characters
 			error(string.format("(lexer.tokenise) unrecognized character '%s' (%d)", char, string.byte(char)))
 		end
