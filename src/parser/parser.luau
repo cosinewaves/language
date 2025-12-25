@@ -31,6 +31,7 @@ export type parser = {
 	parseComparison: (self: parser) -> expression,
 	parseAdditive: (self: parser) -> expression,
 	parseMultiplicative: (self: parser) -> expression,
+	parseExponentiation: (self: parser) -> expression,
 	parseUnary: (self: parser) -> expression,
 	parsePrimary: (self: parser) -> expression,
 }
@@ -123,7 +124,12 @@ function parser.parseIfStatement(self: parser): statement
 
 	-- parse consequent body (statements until 'however', 'otherwise', or 'finish')
 	local consequent: { statement } = {}
-	while self:at() and (self:at() :: token).type ~= tokens.HOWEVER and (self:at() :: token).type ~= tokens.OTHERWISE and (self:at() :: token).type ~= tokens.FINISH do
+	while
+		self:at()
+		and (self:at() :: token).type ~= tokens.HOWEVER
+		and (self:at() :: token).type ~= tokens.OTHERWISE
+		and (self:at() :: token).type ~= tokens.FINISH
+	do
 		consequent[#consequent + 1] = self:parseStatement()
 	end
 
@@ -138,7 +144,12 @@ function parser.parseIfStatement(self: parser): statement
 		self:expect(tokens.THEN, "(parser.parseIfStatement) expected 'then' after however condition")
 
 		local howeverBody: { statement } = {}
-		while self:at() and (self:at() :: token).type ~= tokens.HOWEVER and (self:at() :: token).type ~= tokens.OTHERWISE and (self:at() :: token).type ~= tokens.FINISH do
+		while
+			self:at()
+			and (self:at() :: token).type ~= tokens.HOWEVER
+			and (self:at() :: token).type ~= tokens.OTHERWISE
+			and (self:at() :: token).type ~= tokens.FINISH
+		do
 			howeverBody[#howeverBody + 1] = self:parseStatement()
 		end
 
@@ -176,7 +187,12 @@ function parser.parseExpression(self: parser): expression
 		end
 
 		-- augmented assignments: +=, -=, *=, /=
-		if t.type == tokens.PLUS_EQUALS or t.type == tokens.MINUS_EQUALS or t.type == tokens.MUL_EQUALS or t.type == tokens.DIV_EQUALS then
+		if
+			t.type == tokens.PLUS_EQUALS
+			or t.type == tokens.MINUS_EQUALS
+			or t.type == tokens.MUL_EQUALS
+			or t.type == tokens.DIV_EQUALS
+		then
 			local tok = self:consume()
 			-- derive the operator symbol from the token value, e.g. "+=" -> "+"
 			local op = tok.value:sub(1, 1)
@@ -254,17 +270,31 @@ end
 
 -- * / %
 function parser.parseMultiplicative(self: parser): expression
-	local left = self:parseUnary()
+	local left = self:parseExponentiation()
 
 	while self:at() do
 		local v = (self:at() :: token).value
 		if v == "*" or v == "/" or v == "%" then
 			local op = self:consume().value
-			local right = self:parseUnary()
+			local right = self:parseExponentiation()
 			left = ast.binaryExpression(left, op, right) :: expression
 		else
 			break
 		end
+	end
+
+	return left
+end
+
+-- ^
+function parser.parseExponentiation(self: parser): expression
+	local left = self:parseUnary()
+
+	if self:at() and (self:at() :: token).value == "^" then
+		local op = self:consume().value
+		-- recurse to parseExponentiation (not parseUnary)
+		local right = self:parseExponentiation()
+		return ast.binaryExpression(left, op, right) :: expression
 	end
 
 	return left
