@@ -1,0 +1,25 @@
+-- nested whilst loop with control flow
+-- demonstrates whilst loops inside if statements
+
+set i = 1
+set j = 0
+set total = 0
+
+whilst (i <= 5) then
+    j = 1
+
+    given (i % 2 == 0) then
+        -- even numbers: add all j from 1 to i
+        whilst (j <= i) then
+            total += j
+            j += 1
+        finish
+    otherwise
+        -- odd numbers: just add i
+        total += i
+    finish
+
+    i += 1
+finish
+
+total

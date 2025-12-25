@@ -1,0 +1,78 @@
+-- PRIME NUMBER FINDER
+-- A practical program that finds all prime numbers up to a given limit
+-- Demonstrates: loops, conditionals, boolean logic, and mathematical operations
+
+-- ============================================
+-- Configuration
+-- ============================================
+
+set limit = 30
+set primeCount = 0
+set sumOfPrimes = 0
+
+-- ============================================
+-- Prime Finding Algorithm
+-- ============================================
+
+-- check each number from 2 to limit
+iterate (set candidate = 2, candidate <= limit, candidate += 1) then
+    set isPrime = true
+
+    -- check if candidate is divisible by any number from 2 to candidate-1
+    -- (if it is, it's not prime)
+    set divisor = 2
+    whilst (divisor < candidate) then
+        set remainder = candidate % divisor
+
+        given (remainder == 0) then
+            -- found a divisor, so not prime
+            isPrime = false
+        finish
+
+        divisor += 1
+    finish
+
+    -- if still prime, count it
+    given (isPrime == true) then
+        primeCount += 1
+        sumOfPrimes += candidate
+    finish
+finish
+
+-- ============================================
+-- Analyze the results
+-- ============================================
+
+set averagePrime = 0
+
+given (primeCount > 0) then
+    averagePrime = sumOfPrimes / primeCount
+finish
+
+-- categorize the average
+set category = "unknown"
+
+given (averagePrime < 10) then
+    category = "small"
+however (averagePrime < 20) then
+    category = "medium"
+otherwise
+    category = "large"
+finish
+
+-- ============================================
+-- Calculate some statistics
+-- ============================================
+
+set totalChecked = limit - 1
+set primePercentage = 0
+
+given (totalChecked > 0) then
+    primePercentage = (primeCount * 100) / totalChecked
+finish
+
+-- ============================================
+-- Final result: return the prime count
+-- ============================================
+
+primeCount

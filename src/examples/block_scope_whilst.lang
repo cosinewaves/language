@@ -1,0 +1,17 @@
+-- whilst loop block scoping example
+-- demonstrates that each iteration gets a fresh scope
+-- variables declared with 'set' in the loop are fresh each time
+
+set counter = 0
+set sum = 0
+
+whilst (counter < 5) then
+    -- loopVar is declared fresh each iteration
+    set loopVar = counter * 2
+    sum += loopVar
+    counter += 1
+finish
+
+-- loopVar doesn't exist here (it was in block scope)
+-- but sum and counter do (they were declared outside)
+sum

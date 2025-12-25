@@ -81,6 +81,17 @@ export type returnStatement = {
 	value: expression?,
 }
 
+-- iterate (init, condition, update) then
+--   body
+-- finish
+export type forStatement = {
+	kind: "ForStatement",
+	init: statement, -- variable declaration
+	condition: expression,
+	update: statement, -- assignment/augmented assignment
+	body: { statement },
+}
+
 local function program(body: { statement }): program
 	return { kind = nodeTypes.Program, body = body }
 end

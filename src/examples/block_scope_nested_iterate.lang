@@ -1,0 +1,14 @@
+-- nested iterate loops with block scoping
+-- demonstrates that loop variables are now properly scoped
+-- this didn't work before block scoping was implemented!
+
+set total = 0
+
+iterate (set i = 1, i <= 5, i += 1) then
+    iterate (set j = 1, j <= 5, j += 1) then
+        set product = i * j
+        total += product
+    finish
+finish
+
+total

@@ -1,0 +1,11 @@
+-- original iterate example from specification
+-- demonstrates C-style for loop with accumulation
+
+set x = 5
+set y = 1
+
+iterate (set i = 1, i <= 10, i += 1) then
+    y += i
+finish
+
+y
