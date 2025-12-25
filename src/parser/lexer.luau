@@ -107,7 +107,7 @@ local function tokenise(source: string): { token }
 			tokens[#tokens + 1] = makeToken(tokensTbl.BINARY_OPERATOR, char)
 			i += 1
 
-		-- numbers
+		-- numbers (support optional fractional part)
 		elseif util.isDigit(char) then
 			local start = i
 			-- integer part
@@ -127,9 +127,10 @@ local function tokenise(source: string): { token }
 			tokens[#tokens + 1] = makeToken(tokensTbl.NUMBER, value)
 
 		-- identifiers / keywords / boolean literals
-		elseif util.isAlpha(char) then
+		elseif util.isIdentifierStart(char) then
 			local start = i
-			while i <= length and util.isAlpha(source:sub(i, i)) do
+			-- allow letters, digits and underscores after first char
+			while i <= length and util.isIdentifierPart(source:sub(i, i)) do
 				i += 1
 			end
 
