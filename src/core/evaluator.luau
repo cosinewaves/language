@@ -17,6 +17,8 @@ type stringLiteral = ast.stringLiteral
 type booleanLiteral = ast.booleanLiteral
 type variableDeclaration = ast.variableDeclaration
 type assignment = ast.assignment
+type ifStatement = ast.ifStatement
+type ifBranch = ast.ifBranch
 
 local function evaluate(node: statement | expression, env: environment): runtimeValue
 	if node.kind == ast.nodeTypes.Program then
@@ -41,6 +43,53 @@ local function evaluate(node: statement | expression, env: environment): runtime
 		-- ensure variable exists
 		env:assign(assign.identifier.symbol, value)
 		return value
+	end
+
+	if node.kind == ast.nodeTypes.IfStatement then
+		local ifStmt = node :: ifStatement
+
+		-- evaluate main condition
+		local conditionValue = evaluate(ifStmt.condition, env)
+		if type(conditionValue) ~= "boolean" then
+			error("(evaluator.evaluate) if condition must be a boolean")
+		end
+
+		if conditionValue then
+			-- execute consequent
+			local result: runtimeValue = false
+			for _, stmt in ifStmt.consequent do
+				result = evaluate(stmt, env)
+			end
+			return result
+		end
+
+		-- check however clauses (elseif)
+		for _, branch in ifStmt.alternates do
+			local branchCondition = evaluate(branch.condition, env)
+			if type(branchCondition) ~= "boolean" then
+				error("(evaluator.evaluate) however condition must be a boolean")
+			end
+
+			if branchCondition then
+				local result: runtimeValue = false
+				for _, stmt in branch.body do
+					result = evaluate(stmt, env)
+				end
+				return result
+			end
+		end
+
+		-- otherwise clause (else)
+		if ifStmt.alternate then
+			local result: runtimeValue = false
+			for _, stmt in ifStmt.alternate do
+				result = evaluate(stmt, env)
+			end
+			return result
+		end
+
+		-- no branch taken
+		return false
 	end
 
 	if node.kind == ast.nodeTypes.NumericLiteral then

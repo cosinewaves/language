@@ -7,9 +7,10 @@ local nodeTypes = {
 	BooleanLiteral = "BooleanLiteral",
 	Identifier = "Identifier",
 	BinaryExpr = "BinaryExpr",
-	UnaryExpr = "UnaryExpr", -- for future 'not' operator
+	UnaryExpr = "UnaryExpr",
 	VariableDeclaration = "VariableDeclaration",
 	Assignment = "Assignment",
+	IfStatement = "IfStatement",
 }
 
 export type statement = { kind: string }
@@ -25,6 +26,23 @@ export type binaryExpr = { kind: "BinaryExpr", left: expression, operator: strin
 export type unaryExpr = { kind: "UnaryExpr", operator: string, argument: expression }
 export type variableDeclaration = { kind: "VariableDeclaration", identifier: identifier, value: expression }
 export type assignment = { kind: "Assignment", identifier: identifier, value: expression }
+
+-- IfStatement structure:
+-- given (condition) then
+--   body
+-- however (condition) then
+--   body
+-- otherwise
+--   body
+-- finish
+export type ifBranch = { condition: expression, body: { statement } }
+export type ifStatement = {
+	kind: "IfStatement",
+	condition: expression,
+	consequent: { statement },
+	alternates: { ifBranch }, -- however clauses
+	alternate: { statement }?, -- otherwise clause
+}
 
 local function program(body: { statement }): program
 	return { kind = nodeTypes.Program, body = body }
@@ -62,6 +80,21 @@ local function assignment(id: identifier, value: expression): assignment
 	return { kind = nodeTypes.Assignment, identifier = id, value = value }
 end
 
+local function ifStatement(
+	condition: expression,
+	consequent: { statement },
+	alternates: { ifBranch },
+	alternate: { statement }?
+): ifStatement
+	return {
+		kind = nodeTypes.IfStatement,
+		condition = condition,
+		consequent = consequent,
+		alternates = alternates,
+		alternate = alternate,
+	}
+end
+
 return {
 	nodeTypes = nodeTypes,
 	program = program,
@@ -73,4 +106,5 @@ return {
 	unaryExpression = unaryExpression,
 	variableDeclaration = variableDeclaration,
 	assignment = assignment,
+	ifStatement = ifStatement,
 }

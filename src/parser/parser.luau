@@ -9,6 +9,7 @@ type program = ast.program
 type statement = ast.statement
 type expression = ast.expression
 type identifier = ast.identifier
+type ifBranch = ast.ifBranch
 
 export type parser = {
 	tokens: { token },
@@ -22,6 +23,7 @@ export type parser = {
 	parseProgram: (self: parser) -> program,
 	parseStatement: (self: parser) -> statement,
 	parseVariableDeclaration: (self: parser) -> statement,
+	parseIfStatement: (self: parser) -> statement,
 
 	parseExpression: (self: parser) -> expression,
 	parseOr: (self: parser) -> expression,
@@ -85,6 +87,10 @@ function parser.parseStatement(self: parser): statement
 		return self:parseVariableDeclaration()
 	end
 
+	if t.type == tokens.GIVEN then
+		return self:parseIfStatement()
+	end
+
 	return self:parseExpression()
 end
 
@@ -97,6 +103,63 @@ function parser.parseVariableDeclaration(self: parser): statement
 
 	local value = self:parseExpression()
 	return ast.variableDeclaration(ast.identifier(name.value), value) :: statement
+end
+
+-- given (condition) then
+--   body
+-- however (condition) then
+--   body
+-- otherwise
+--   body
+-- finish
+function parser.parseIfStatement(self: parser): statement
+	self:consume() -- given
+
+	-- parse condition
+	self:expect(tokens.OPEN_PARENTHESIS, "(parser.parseIfStatement) expected '(' after 'given'")
+	local condition = self:parseExpression()
+	self:expect(tokens.CLOSE_PARENTHESIS, "(parser.parseIfStatement) expected ')' after condition")
+	self:expect(tokens.THEN, "(parser.parseIfStatement) expected 'then' after condition")
+
+	-- parse consequent body (statements until 'however', 'otherwise', or 'finish')
+	local consequent: { statement } = {}
+	while self:at() and (self:at() :: token).type ~= tokens.HOWEVER and (self:at() :: token).type ~= tokens.OTHERWISE and (self:at() :: token).type ~= tokens.FINISH do
+		consequent[#consequent + 1] = self:parseStatement()
+	end
+
+	-- parse however clauses (elseif)
+	local alternates: { ifBranch } = {}
+	while self:at() and (self:at() :: token).type == tokens.HOWEVER do
+		self:consume() -- however
+
+		self:expect(tokens.OPEN_PARENTHESIS, "(parser.parseIfStatement) expected '(' after 'however'")
+		local howeverCondition = self:parseExpression()
+		self:expect(tokens.CLOSE_PARENTHESIS, "(parser.parseIfStatement) expected ')' after however condition")
+		self:expect(tokens.THEN, "(parser.parseIfStatement) expected 'then' after however condition")
+
+		local howeverBody: { statement } = {}
+		while self:at() and (self:at() :: token).type ~= tokens.HOWEVER and (self:at() :: token).type ~= tokens.OTHERWISE and (self:at() :: token).type ~= tokens.FINISH do
+			howeverBody[#howeverBody + 1] = self:parseStatement()
+		end
+
+		alternates[#alternates + 1] = { condition = howeverCondition, body = howeverBody }
+	end
+
+	-- parse otherwise clause (else)
+	local alternate: { statement }? = nil
+	if self:at() and (self:at() :: token).type == tokens.OTHERWISE then
+		self:consume() -- otherwise
+
+		local otherwiseBody: { statement } = {}
+		while self:at() and (self:at() :: token).type ~= tokens.FINISH do
+			otherwiseBody[#otherwiseBody + 1] = self:parseStatement()
+		end
+		alternate = otherwiseBody
+	end
+
+	self:expect(tokens.FINISH, "(parser.parseIfStatement) expected 'finish' to close if statement")
+
+	return ast.ifStatement(condition, consequent, alternates, alternate) :: statement
 end
 
 function parser.parseExpression(self: parser): expression
