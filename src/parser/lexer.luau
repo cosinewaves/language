@@ -37,8 +37,29 @@ local function tokenise(source: string): { token }
 		elseif table.find(binaryOperators, char) then
 			tokens[#tokens + 1] = makeToken(tokensTbl.BINARY_OPERATOR, char)
 			i += 1
+
+		-- two-character comparison operators should be checked before single '=':
+		elseif char == "=" and source:sub(i + 1, i + 1) == "=" then
+			tokens[#tokens + 1] = makeToken(tokensTbl.EQ, "==")
+			i += 2
+		elseif char == "!" and source:sub(i + 1, i + 1) == "=" then
+			tokens[#tokens + 1] = makeToken(tokensTbl.NE, "!=")
+			i += 2
+		elseif char == "<" and source:sub(i + 1, i + 1) == "=" then
+			tokens[#tokens + 1] = makeToken(tokensTbl.LTE, "<=")
+			i += 2
+		elseif char == ">" and source:sub(i + 1, i + 1) == "=" then
+			tokens[#tokens + 1] = makeToken(tokensTbl.GTE, ">=")
+			i += 2
+		-- single-character '=' and single <, >:
 		elseif char == "=" then
 			tokens[#tokens + 1] = makeToken(tokensTbl.EQUALS, char)
+			i += 1
+		elseif char == "<" then
+			tokens[#tokens + 1] = makeToken(tokensTbl.LT, char)
+			i += 1
+		elseif char == ">" then
+			tokens[#tokens + 1] = makeToken(tokensTbl.GT, char)
 			i += 1
 
 		-- numbers
@@ -105,30 +126,6 @@ local function tokenise(source: string): { token }
 			i += 1
 
 			tokens[#tokens + 1] = makeToken(tokensTbl.STRING_LITERAL, str)
-
-		-- comparison operators in your lexer loop
-		elseif (char == "=" :: string) and source:sub(i + 1, i + 1) == "=" then
-			tokens[#tokens + 1] = makeToken(tokensTbl.EQ, "==")
-			i += 2
-		elseif char == "!" and source:sub(i + 1, i + 1) == "=" then
-			tokens[#tokens + 1] = makeToken(tokensTbl.NE, "!=")
-			i += 2
-		elseif char == "<" then
-			if source:sub(i + 1, i + 1) == "=" then
-				tokens[#tokens + 1] = makeToken(tokensTbl.LTE, "<=")
-				i += 2
-			else
-				tokens[#tokens + 1] = makeToken(tokensTbl.LT, "<")
-				i += 1
-			end
-		elseif char == ">" then
-			if source:sub(i + 1, i + 1) == "=" then
-				tokens[#tokens + 1] = makeToken(tokensTbl.GTE, ">=")
-				i += 2
-			else
-				tokens[#tokens + 1] = makeToken(tokensTbl.GT, ">")
-				i += 1
-			end
 		else -- unknown characters
 			error(string.format("(lexer.tokenise) unrecognized character '%s' (%d)", char, string.byte(char)))
 		end
