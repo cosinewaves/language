@@ -197,7 +197,7 @@ end
 function parser.parseUnary(self: parser): expression
 	local t = self:at()
 
-	if t and t.type == tokens.NOT then
+	if t and (t.type == tokens.NOT or t.value == "-") then
 		local op = self:consume().value
 		local expr = self:parseUnary()
 		return ast.unaryExpression(op, expr) :: expression

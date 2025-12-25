@@ -59,18 +59,23 @@ local function evaluate(node: statement | expression, env: environment): runtime
 		return env:lookup((node :: identifier).symbol)
 	end
 
+	-- unary expression
 	if node.kind == ast.nodeTypes.UnaryExpr then
 		local expr = node :: unaryExpr
-		local value = evaluate(expr.argument, env)
+		local val = evaluate(expr.argument, env)
 
 		if expr.operator == "not" then
-			if type(value) ~= "boolean" then
-				error(`(evaluator.evaluate) 'not' expects boolean, got {type(value)}`)
-			end
-			return not value
+			return not val
 		end
 
-		error("(evaluator.evaluate) unknown unary operator: " .. expr.operator)
+		if expr.operator == "-" then
+			if type(val) ~= "number" then
+				error("(evaluator) unary '-' expects a number")
+			end
+			return -val
+		end
+
+		error("(evaluator) unknown unary operator: " .. expr.operator)
 	end
 
 	if node.kind == ast.nodeTypes.BinaryExpr then
