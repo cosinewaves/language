@@ -57,10 +57,11 @@ local function evaluate(node: statement | expression, env: environment): runtime
 		end
 
 		if conditionValue then
-			-- execute consequent
+			-- execute consequent in its own block scope
+			local blockEnv = environment.new(env)
 			local result: runtimeValue = false
 			for _, stmt in ifStmt.consequent do
-				result = evaluate(stmt, env)
+				result = evaluate(stmt, blockEnv)
 			end
 			return result
 		end
@@ -73,9 +74,11 @@ local function evaluate(node: statement | expression, env: environment): runtime
 			end
 
 			if branchCondition then
+				-- execute however branch in its own block scope
+				local blockEnv = environment.new(env)
 				local result: runtimeValue = false
 				for _, stmt in branch.body do
-					result = evaluate(stmt, env)
+					result = evaluate(stmt, blockEnv)
 				end
 				return result
 			end
@@ -83,9 +86,11 @@ local function evaluate(node: statement | expression, env: environment): runtime
 
 		-- otherwise clause (else)
 		if ifStmt.alternate then
+			-- execute otherwise in its own block scope
+			local blockEnv = environment.new(env)
 			local result: runtimeValue = false
 			for _, stmt in ifStmt.alternate do
-				result = evaluate(stmt, env)
+				result = evaluate(stmt, blockEnv)
 			end
 			return result
 		end
@@ -99,6 +104,7 @@ local function evaluate(node: statement | expression, env: environment): runtime
 		local result: runtimeValue = false
 
 		while true do
+			-- evaluate condition in parent scope
 			local conditionValue = evaluate(whileStmt.condition, env)
 			if type(conditionValue) ~= "boolean" then
 				error("(evaluator.evaluate) whilst condition must be a boolean")
@@ -108,9 +114,10 @@ local function evaluate(node: statement | expression, env: environment): runtime
 				break
 			end
 
-			-- execute body
+			-- create fresh body scope for each iteration
+			local bodyEnv = environment.new(env)
 			for _, stmt in whileStmt.body do
-				result = evaluate(stmt, env)
+				result = evaluate(stmt, bodyEnv)
 			end
 		end
 
@@ -121,12 +128,15 @@ local function evaluate(node: statement | expression, env: environment): runtime
 		local forStmt = node :: forStatement
 		local result: runtimeValue = false
 
-		-- execute init (variable declaration)
-		evaluate(forStmt.init, env)
+		-- create loop scope for loop variable
+		local loopEnv = environment.new(env)
+
+		-- execute init (variable declaration) in loop scope
+		evaluate(forStmt.init, loopEnv)
 
 		-- loop
 		while true do
-			local conditionValue = evaluate(forStmt.condition, env)
+			local conditionValue = evaluate(forStmt.condition, loopEnv)
 			if type(conditionValue) ~= "boolean" then
 				error("(evaluator.evaluate) iterate condition must be a boolean")
 			end
@@ -135,13 +145,14 @@ local function evaluate(node: statement | expression, env: environment): runtime
 				break
 			end
 
-			-- execute body
+			-- create fresh body scope for each iteration (child of loop scope)
+			local bodyEnv = environment.new(loopEnv)
 			for _, stmt in forStmt.body do
-				result = evaluate(stmt, env)
+				result = evaluate(stmt, bodyEnv)
 			end
 
-			-- execute update
-			evaluate(forStmt.update, env)
+			-- execute update in loop scope (so it can access loop variable)
+			evaluate(forStmt.update, loopEnv)
 		end
 
 		return result

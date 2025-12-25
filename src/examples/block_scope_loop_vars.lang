@@ -1,0 +1,18 @@
+-- loop variable isolation example
+-- demonstrates that loop variables from different loops don't conflict
+-- this is the power of block scoping!
+
+set result = 0
+
+-- first loop with variable i
+iterate (set i = 1, i <= 3, i += 1) then
+    result += i
+finish
+
+-- second loop can also use variable i (different scope!)
+iterate (set i = 10, i <= 12, i += 1) then
+    result += i
+finish
+
+-- result = (1+2+3) + (10+11+12) = 6 + 33 = 39
+result

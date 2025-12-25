@@ -1,0 +1,35 @@
+-- complex nested block scoping example
+-- demonstrates multiple levels of nesting with proper scoping
+
+set globalCount = 0
+set finalResult = 0
+
+-- outer loop
+iterate (set i = 1, i <= 3, i += 1) then
+    set outerSum = 0
+
+    -- nested condition inside loop
+    given (i % 2 == 0) then
+        -- even numbers: nested loop
+        iterate (set j = 1, j <= i, j += 1) then
+            set innerProduct = i * j
+            outerSum += innerProduct
+        finish
+    otherwise
+        -- odd numbers: while loop
+        set k = 1
+        whilst (k <= i) then
+            set innerValue = i + k
+            outerSum += innerValue
+            k += 1
+        finish
+    finish
+
+    -- outerSum is accessible here (same block as loop)
+    finalResult += outerSum
+    globalCount += 1
+finish
+
+-- only globalCount and finalResult exist here
+-- i, j, k, outerSum, innerProduct, innerValue are all gone (block scoped)
+finalResult

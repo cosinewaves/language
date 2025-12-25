@@ -1,0 +1,196 @@
+-- NUMBER GUESSING GAME SIMULATOR
+-- A program that simulates a number guessing game with strategy
+-- Demonstrates: all language features in a fun, game-like context
+
+-- ============================================
+-- GAME SETUP
+-- ============================================
+
+set secretNumber = 42
+set minRange = 1
+set maxRange = 100
+set maxGuesses = 10
+set currentGuess = 50
+set guessCount = 0
+set gameWon = false
+
+-- scoring system
+set baseScore = 1000
+set penaltyPerGuess = 50
+set bonusForSpeed = 0
+
+-- ============================================
+-- BINARY SEARCH STRATEGY
+-- Simulates an AI trying to guess the number
+-- ============================================
+
+whilst (guessCount < maxGuesses and gameWon == false) then
+    guessCount += 1
+
+    -- check if we found it
+    given (currentGuess == secretNumber) then
+        gameWon = true
+    however (currentGuess < secretNumber) then
+        -- guess was too low
+        set hint = "too low"
+        minRange = currentGuess + 1
+
+        -- adjust strategy based on how far off we are
+        set difference = secretNumber - currentGuess
+        given (difference > 20) then
+            -- jump higher
+            currentGuess += 15
+        otherwise
+            -- get closer carefully
+            currentGuess = (minRange + maxRange) / 2
+        finish
+
+    otherwise
+        -- guess was too high
+        set hint = "too high"
+        maxRange = currentGuess - 1
+        currentGuess = (minRange + maxRange) / 2
+    finish
+finish
+
+-- ============================================
+-- CALCULATE FINAL SCORE
+-- ============================================
+
+set finalScore = baseScore
+
+-- deduct points for each guess
+set penalty = guessCount * penaltyPerGuess
+finalScore -= penalty
+
+-- bonus for winning quickly
+given (gameWon == true) then
+    given (guessCount <= 3) then
+        bonusForSpeed = 500
+    however (guessCount <= 5) then
+        bonusForSpeed = 300
+    however (guessCount <= 7) then
+        bonusForSpeed = 100
+    finish
+
+    finalScore += bonusForSpeed
+otherwise
+    -- didn't win, penalty
+    finalScore = finalScore / 2
+finish
+
+-- ============================================
+-- GAME STATISTICS AND ANALYSIS
+-- ============================================
+
+set efficiency = 0
+given (guessCount > 0) then
+    efficiency = (100 * 10) / guessCount
+finish
+
+set rating = "beginner"
+given (efficiency >= 90) then
+    rating = "expert"
+however (efficiency >= 70) then
+    rating = "advanced"
+however (efficiency >= 50) then
+    rating = "intermediate"
+finish
+
+-- ============================================
+-- CALCULATE ACHIEVEMENTS
+-- ============================================
+
+set achievements = 0
+
+-- perfect score achievement
+given (guessCount <= 3 and gameWon == true) then
+    achievements += 1
+finish
+
+-- won the game achievement
+given (gameWon == true) then
+    achievements += 1
+finish
+
+-- high score achievement
+given (finalScore > 800) then
+    achievements += 1
+finish
+
+-- ============================================
+-- POST-GAME ANALYSIS
+-- Create a summary number that encodes game state
+-- ============================================
+
+set summaryCode = 0
+
+-- encode win/loss (1000s place)
+given (gameWon == true) then
+    summaryCode += 1000
+finish
+
+-- encode guess count (100s place)
+summaryCode += guessCount * 100
+
+-- encode achievements (10s place)
+summaryCode += achievements * 10
+
+-- encode rating (1s place)
+given (rating == "expert") then
+    summaryCode += 4
+however (rating == "advanced") then
+    summaryCode += 3
+however (rating == "intermediate") then
+    summaryCode += 2
+otherwise
+    summaryCode += 1
+finish
+
+-- ============================================
+-- BONUS FEATURE: Pattern Generation
+-- Create a visual pattern based on the game
+-- ============================================
+
+set patternValue = 0
+
+iterate (set row = 1, row <= 5, row += 1) then
+    iterate (set col = 1, col <= 5, col += 1) then
+        set cellValue = row * col
+
+        -- highlight cells based on game metrics
+        given (cellValue == guessCount) then
+            patternValue += cellValue * 2
+        however (cellValue <= achievements) then
+            patternValue += cellValue
+        finish
+    finish
+finish
+
+-- ============================================
+-- FINAL RESULT CALCULATION
+-- Combine all metrics into final output
+-- ============================================
+
+set result = 0
+
+-- weight each component
+set scoreComponent = finalScore / 10
+set achievementComponent = achievements * 50
+set patternComponent = patternValue
+set guessComponent = guessCount * 5
+
+result = scoreComponent + achievementComponent + patternComponent - guessComponent
+
+-- normalize to a reasonable range
+given (result > 500) then
+    result = result / 5
+however (result > 250) then
+    result = result / 3
+finish
+
+-- ============================================
+-- OUTPUT: Game state encoded in result
+-- ============================================
+
+result
