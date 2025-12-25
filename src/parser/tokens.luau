@@ -23,6 +23,11 @@ export type tokenTypes = {
 	DIV_EQUALS: string,
 	OPEN_PARENTHESIS: string,
 	CLOSE_PARENTHESIS: string,
+	GIVEN: string,
+	THEN: string,
+	OTHERWISE: string,
+	HOWEVER: string,
+	FINISH: string,
 }
 
 return {
@@ -48,4 +53,9 @@ return {
 	DIV_EQUALS = "DIV_EQUALS",
 	OPEN_PARENTHESIS = "OPEN_PARENTHESIS",
 	CLOSE_PARENTHESIS = "CLOSE_PARENTHESIS",
+	GIVEN = "GIVEN",
+	THEN = "THEN",
+	OTHERWISE = "OTHERWISE",
+	HOWEVER = "HOWEVER",
+	FINISH = "FINISH",
 } :: tokenTypes

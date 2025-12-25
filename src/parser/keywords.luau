@@ -7,4 +7,9 @@ return {
 	["and"] = "AND",
 	["or"] = "OR",
 	["not"] = "NOT",
+	["given"] = "GIVEN",
+	["then"] = "THEN",
+	["otherwise"] = "OTHERWISE",
+	["however"] = "HOWEVER",
+	["finish"] = "FINISH",
 } :: { [any]: string }
