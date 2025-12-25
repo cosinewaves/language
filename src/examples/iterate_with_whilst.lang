@@ -1,0 +1,20 @@
+-- nested loop workaround example
+-- demonstrates iterate with whilst for nested iteration
+-- (true nested iterate loops need block scoping)
+
+set total = 0
+set j = 0
+set product = 0
+
+-- outer loop using iterate
+iterate (set i = 1, i <= 5, i += 1) then
+    -- inner loop using whilst (j declared outside)
+    j = 1
+    whilst (j <= 5) then
+        product = i * j
+        total += product
+        j += 1
+    finish
+finish
+
+total
