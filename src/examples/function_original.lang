@@ -1,0 +1,10 @@
+-- original function example from specification
+-- demonstrates basic function with return value
+
+define x(y) then
+    return y + 5
+finish
+
+set a = x(3)
+
+a

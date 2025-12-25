@@ -1,0 +1,35 @@
+-- closure example
+-- demonstrates that functions capture their environment (closure)
+
+define makeAdder(x) then
+    define add(y) then
+        return x + y
+    finish
+    return add
+finish
+
+-- ERROR: nested function definitions not supported yet
+-- this example won't work until we support returning functions
+
+-- simpler closure example
+set baseValue = 10
+
+define addToBase(n) then
+    return n + baseValue
+finish
+
+set result1 = addToBase(5)
+set result2 = addToBase(15)
+
+-- change base value
+baseValue = 20
+
+set result3 = addToBase(5)
+
+-- result1 = 15 (5 + 10)
+-- result2 = 25 (15 + 10)
+-- result3 = 25 (5 + 20)
+-- final sum
+set total = result1 + result2 + result3
+
+total

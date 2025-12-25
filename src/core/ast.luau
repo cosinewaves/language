@@ -11,6 +11,11 @@ local nodeTypes = {
 	VariableDeclaration = "VariableDeclaration",
 	Assignment = "Assignment",
 	IfStatement = "IfStatement",
+	WhileStatement = "WhileStatement",
+	ForStatement = "ForStatement",
+	FunctionDeclaration = "FunctionDeclaration",
+	CallExpression = "CallExpression",
+	ReturnStatement = "ReturnStatement",
 }
 
 export type statement = { kind: string }
@@ -42,6 +47,38 @@ export type ifStatement = {
 	consequent: { statement },
 	alternates: { ifBranch }, -- however clauses
 	alternate: { statement }?, -- otherwise clause
+}
+
+export type whileStatement = {
+	kind: "WhileStatement",
+	condition: expression,
+	body: { statement },
+}
+
+export type forStatement = {
+	kind: "ForStatement",
+	init: statement,
+	condition: expression,
+	update: statement,
+	body: { statement },
+}
+
+export type functionDeclaration = {
+	kind: "FunctionDeclaration",
+	name: identifier,
+	parameters: { identifier },
+	body: { statement },
+}
+
+export type callExpression = {
+	kind: "CallExpression",
+	callee: expression,
+	arguments: { expression },
+}
+
+export type returnStatement = {
+	kind: "ReturnStatement",
+	value: expression?,
 }
 
 local function program(body: { statement }): program
@@ -95,6 +132,57 @@ local function ifStatement(
 	}
 end
 
+local function whileStatement(condition: expression, body: { statement }): whileStatement
+	return {
+		kind = nodeTypes.WhileStatement,
+		condition = condition,
+		body = body,
+	}
+end
+
+local function forStatement(
+	init: statement,
+	condition: expression,
+	update: statement,
+	body: { statement }
+): forStatement
+	return {
+		kind = nodeTypes.ForStatement,
+		init = init,
+		condition = condition,
+		update = update,
+		body = body,
+	}
+end
+
+local function functionDeclaration(
+	name: identifier,
+	parameters: { identifier },
+	body: { statement }
+): functionDeclaration
+	return {
+		kind = nodeTypes.FunctionDeclaration,
+		name = name,
+		parameters = parameters,
+		body = body,
+	}
+end
+
+local function callExpression(callee: expression, arguments: { expression }): callExpression
+	return {
+		kind = nodeTypes.CallExpression,
+		callee = callee,
+		arguments = arguments,
+	}
+end
+
+local function returnStatement(value: expression?): returnStatement
+	return {
+		kind = nodeTypes.ReturnStatement,
+		value = value,
+	}
+end
+
 return {
 	nodeTypes = nodeTypes,
 	program = program,
@@ -107,4 +195,9 @@ return {
 	variableDeclaration = variableDeclaration,
 	assignment = assignment,
 	ifStatement = ifStatement,
+	whileStatement = whileStatement,
+	forStatement = forStatement,
+	functionDeclaration = functionDeclaration,
+	callExpression = callExpression,
+	returnStatement = returnStatement,
 }

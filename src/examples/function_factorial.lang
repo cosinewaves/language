@@ -1,0 +1,13 @@
+-- factorial using recursion
+-- demonstrates recursive function calls
+
+define factorial(n) then
+    given (n <= 1) then
+        return 1
+    otherwise
+        return n * factorial(n - 1)
+    finish
+finish
+
+set result = factorial(5)
+result

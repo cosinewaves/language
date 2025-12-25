@@ -1,0 +1,274 @@
+-- FUNCTIONS SHOWCASE
+-- Comprehensive demonstration of all function features
+-- Shows: basic functions, recursion, closures, multiple parameters, return values
+
+-- ============================================
+-- PART 1: Basic Functions
+-- ============================================
+
+-- simple addition function
+define add(a, b) then
+    return a + b
+finish
+
+-- function with single parameter
+define square(x) then
+    return x * x
+finish
+
+-- function with multiple operations
+define calculate(x, y) then
+    set sum = x + y
+    set product = x * y
+    set result = sum + product
+    return result
+finish
+
+-- test basic functions
+set result1 = add(5, 3)
+set result2 = square(4)
+set result3 = calculate(3, 4)
+
+-- ============================================
+-- PART 2: Functions with Control Flow
+-- ============================================
+
+define max(a, b) then
+    given (a > b) then
+        return a
+    otherwise
+        return b
+    finish
+finish
+
+define absoluteValue(n) then
+    given (n < 0) then
+        return -n
+    otherwise
+        return n
+    finish
+finish
+
+define sign(n) then
+    given (n > 0) then
+        return 1
+    however (n < 0) then
+        return -1
+    otherwise
+        return 0
+    finish
+finish
+
+set maxResult = max(10, 7)
+set absResult = absoluteValue(-5)
+set signResult = sign(-3)
+
+-- ============================================
+-- PART 3: Recursive Functions
+-- ============================================
+
+-- factorial
+define factorial(n) then
+    given (n <= 1) then
+        return 1
+    otherwise
+        return n * factorial(n - 1)
+    finish
+finish
+
+-- fibonacci
+define fibonacci(n) then
+    given (n <= 0) then
+        return 0
+    however (n == 1) then
+        return 1
+    otherwise
+        set fib1 = fibonacci(n - 1)
+        set fib2 = fibonacci(n - 2)
+        return fib1 + fib2
+    finish
+finish
+
+-- sum from 1 to n
+define sumToN(n) then
+    given (n <= 0) then
+        return 0
+    otherwise
+        return n + sumToN(n - 1)
+    finish
+finish
+
+set fact5 = factorial(5)
+set fib6 = fibonacci(6)
+set sum10 = sumToN(10)
+
+-- ============================================
+-- PART 4: Functions with Loops
+-- ============================================
+
+define sumArray(start, end) then
+    set total = 0
+    iterate (set i = start, i <= end, i += 1) then
+        total += i
+    finish
+    return total
+finish
+
+define power(base, exponent) then
+    set result = 1
+    set counter = 0
+    whilst (counter < exponent) then
+        result *= base
+        counter += 1
+    finish
+    return result
+finish
+
+define isPrime(n) then
+    given (n < 2) then
+        return false
+    finish
+
+    set divisor = 2
+    whilst (divisor < n) then
+        set remainder = n % divisor
+        given (remainder == 0) then
+            return false
+        finish
+        divisor += 1
+    finish
+
+    return true
+finish
+
+set arraySum = sumArray(1, 5)
+set powerResult = power(2, 8)
+set isPrime17 = isPrime(17)
+
+-- ============================================
+-- PART 5: Closures (Functions accessing outer variables)
+-- ============================================
+
+set globalMultiplier = 3
+
+define multiplyByGlobal(n) then
+    return n * globalMultiplier
+finish
+
+set closureResult1 = multiplyByGlobal(5)
+
+-- change global
+globalMultiplier = 5
+
+set closureResult2 = multiplyByGlobal(5)
+
+-- ============================================
+-- PART 6: Helper Functions Working Together
+-- ============================================
+
+define double(x) then
+    return x * 2
+finish
+
+define triple(x) then
+    return x * 3
+finish
+
+define applyBoth(x) then
+    set doubled = double(x)
+    set tripled = triple(x)
+    return doubled + tripled
+finish
+
+set bothResult = applyBoth(4)
+
+-- ============================================
+-- PART 7: Mathematical Functions
+-- ============================================
+
+define average(a, b) then
+    return (a + b) / 2
+finish
+
+define isEven(n) then
+    return n % 2 == 0
+finish
+
+define isOdd(n) then
+    return not isEven(n)
+finish
+
+define gcd(a, b) then
+    whilst (b != 0) then
+        set temp = b
+        b = a % b
+        a = temp
+    finish
+    return a
+finish
+
+set avg = average(10, 20)
+set even8 = isEven(8)
+set odd7 = isOdd(7)
+set gcdResult = gcd(48, 18)
+
+-- ============================================
+-- PART 8: Original Example from Specification
+-- ============================================
+
+define x(y) then
+    return y + 5
+finish
+
+set a = x(3)
+-- a is now 8
+
+-- ============================================
+-- PART 9: Complex Function Composition
+-- ============================================
+
+define processNumber(n) then
+    set doubled = double(n)
+    set squared = square(doubled)
+    set absolute = absoluteValue(squared)
+    return absolute
+finish
+
+define calculateScore(value) then
+    given (value > 90) then
+        return 10
+    however (value > 80) then
+        return 8
+    however (value > 70) then
+        return 6
+    otherwise
+        return 4
+    finish
+finish
+
+set processedValue = processNumber(3)
+set scoreValue = calculateScore(85)
+
+-- ============================================
+-- FINAL RESULT: Combine everything
+-- ============================================
+
+set finalTotal = 0
+
+-- add all function results
+finalTotal += result1
+finalTotal += result2
+finalTotal += maxResult
+finalTotal += fact5
+finalTotal += fib6
+finalTotal += arraySum
+finalTotal += a
+finalTotal += processedValue
+finalTotal += scoreValue
+
+-- apply some functions to the total
+set finalSquared = square(finalTotal)
+set finalWithBonus = add(finalSquared, 100)
+
+-- return the final result
+finalWithBonus

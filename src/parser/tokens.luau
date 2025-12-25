@@ -28,6 +28,11 @@ export type tokenTypes = {
 	OTHERWISE: string,
 	HOWEVER: string,
 	FINISH: string,
+	WHILST: string,
+	ITERATE: string,
+	COMMA: string,
+	DEFINE: string,
+	RETURN: string,
 }
 
 return {
@@ -58,4 +63,9 @@ return {
 	OTHERWISE = "OTHERWISE",
 	HOWEVER = "HOWEVER",
 	FINISH = "FINISH",
+	WHILST = "WHILST",
+	ITERATE = "ITERATE",
+	COMMA = "COMMA",
+	DEFINE = "DEFINE",
+	RETURN = "RETURN",
 } :: tokenTypes
