@@ -19,6 +19,7 @@ type variableDeclaration = ast.variableDeclaration
 type assignment = ast.assignment
 type ifStatement = ast.ifStatement
 type ifBranch = ast.ifBranch
+type whileStatement = ast.whileStatement
 
 local function evaluate(node: statement | expression, env: environment): runtimeValue
 	if node.kind == ast.nodeTypes.Program then
@@ -90,6 +91,29 @@ local function evaluate(node: statement | expression, env: environment): runtime
 
 		-- no branch taken
 		return false
+	end
+
+	if node.kind == ast.nodeTypes.WhileStatement then
+		local whileStmt = node :: whileStatement
+		local result: runtimeValue = false
+
+		while true do
+			local conditionValue = evaluate(whileStmt.condition, env)
+			if type(conditionValue) ~= "boolean" then
+				error("(evaluator.evaluate) whilst condition must be a boolean")
+			end
+
+			if not conditionValue then
+				break
+			end
+
+			-- execute body
+			for _, stmt in whileStmt.body do
+				result = evaluate(stmt, env)
+			end
+		end
+
+		return result
 	end
 
 	if node.kind == ast.nodeTypes.NumericLiteral then

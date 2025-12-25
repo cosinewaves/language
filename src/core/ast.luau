@@ -11,6 +11,7 @@ local nodeTypes = {
 	VariableDeclaration = "VariableDeclaration",
 	Assignment = "Assignment",
 	IfStatement = "IfStatement",
+	WhileStatement = "WhileStatement",
 }
 
 export type statement = { kind: string }
@@ -42,6 +43,12 @@ export type ifStatement = {
 	consequent: { statement },
 	alternates: { ifBranch }, -- however clauses
 	alternate: { statement }?, -- otherwise clause
+}
+
+export type whileStatement = {
+	kind: "WhileStatement",
+	condition: expression,
+	body: { statement },
 }
 
 local function program(body: { statement }): program
@@ -95,6 +102,14 @@ local function ifStatement(
 	}
 end
 
+local function whileStatement(condition: expression, body: { statement }): whileStatement
+	return {
+		kind = nodeTypes.WhileStatement,
+		condition = condition,
+		body = body,
+	}
+end
+
 return {
 	nodeTypes = nodeTypes,
 	program = program,
@@ -107,4 +122,5 @@ return {
 	variableDeclaration = variableDeclaration,
 	assignment = assignment,
 	ifStatement = ifStatement,
+	whileStatement = whileStatement,
 }
