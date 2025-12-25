@@ -1,0 +1,18 @@
+-- parent scope access example
+-- demonstrates that child blocks can read and modify parent variables
+
+set outerVar = 10
+set total = 0
+
+given (outerVar > 5) then
+    -- can access outerVar from parent scope
+    set innerVar = outerVar + 5
+    -- can modify parent variable total
+    total = innerVar
+otherwise
+    total = 0
+finish
+
+-- outerVar and total still exist (parent scope)
+-- innerVar doesn't exist (was in block scope)
+total

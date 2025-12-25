@@ -1,0 +1,257 @@
+-- SHOWCASE PROGRAM
+-- Demonstrates all features of the language
+-- Author: Your Language Team
+-- Description: A number analyzer and pattern generator
+
+-- ============================================
+-- PART 1: Variable declarations and types
+-- ============================================
+
+set programName = "Number Analyzer"
+set version = 1.5
+set isRunning = true
+set dataCount = 0
+
+-- ============================================
+-- PART 2: Arithmetic and operators
+-- ============================================
+
+set baseNumber = 12
+set multiplier = 3
+set offset = 7
+
+-- demonstrate all arithmetic operators
+set sum = baseNumber + multiplier
+set difference = baseNumber - multiplier
+set product = baseNumber * multiplier
+set quotient = baseNumber / multiplier
+set remainder = baseNumber % multiplier
+set power = 2 ^ 8
+
+-- complex expression with precedence
+set complexCalc = (baseNumber + offset) * multiplier - power / 2
+
+-- ============================================
+-- PART 3: Floating point numbers
+-- ============================================
+
+set pi = 3.14159
+set radius = 5.5
+set area = pi * radius ^ 2
+set circumference = 2.0 * pi * radius
+
+-- ============================================
+-- PART 4: String operations
+-- ============================================
+
+set firstName = "Number"
+set lastName = "Cruncher"
+set fullName = firstName + " " + lastName
+set message = "Processing: " + fullName
+
+-- ============================================
+-- PART 5: Comparison and logical operators
+-- ============================================
+
+set threshold = 50
+set checkValue = 75
+set isAboveThreshold = checkValue > threshold
+set isInRange = checkValue >= 50 and checkValue <= 100
+set isOutOfBounds = checkValue < 0 or checkValue > 200
+
+-- unary operators
+set isNotValid = not isInRange
+set negativeValue = -checkValue
+
+-- ============================================
+-- PART 6: Control flow (if/else)
+-- ============================================
+
+set category = "unknown"
+set score = 0
+
+given (checkValue >= 90) then
+    category = "excellent"
+    score = 10
+however (checkValue >= 70) then
+    category = "good"
+    score = 8
+however (checkValue >= 50) then
+    category = "average"
+    score = 6
+otherwise
+    category = "poor"
+    score = 3
+finish
+
+-- nested if statements
+set bonus = 0
+given (score >= 8) then
+    given (checkValue >= 95) then
+        bonus = 5
+    otherwise
+        bonus = 2
+    finish
+finish
+
+-- ============================================
+-- PART 7: While loops
+-- ============================================
+
+set counter = 1
+set whileSum = 0
+
+whilst (counter <= 5) then
+    set squaredValue = counter ^ 2
+    whileSum += squaredValue
+    counter += 1
+finish
+
+-- ============================================
+-- PART 8: For loops (iterate)
+-- ============================================
+
+set forSum = 0
+set factorial = 1
+
+iterate (set i = 1, i <= 10, i += 1) then
+    forSum += i
+
+    given (i <= 5) then
+        factorial *= i
+    finish
+finish
+
+-- ============================================
+-- PART 9: Nested loops with block scoping
+-- ============================================
+
+set matrixSum = 0
+set rowCount = 4
+set colCount = 3
+
+iterate (set row = 1, row <= rowCount, row += 1) then
+    set rowSum = 0
+
+    iterate (set col = 1, col <= colCount, col += 1) then
+        set cellValue = row * col
+        rowSum += cellValue
+        matrixSum += cellValue
+    finish
+
+    -- rowSum exists here (same block as outer loop)
+    -- but cellValue doesn't (inner loop block)
+    dataCount += 1
+finish
+
+-- ============================================
+-- PART 10: Augmented assignment operators
+-- ============================================
+
+set accumulator = 100
+accumulator += 50   -- 150
+accumulator -= 25   -- 125
+accumulator *= 2    -- 250
+accumulator /= 5    -- 50
+
+-- ============================================
+-- PART 11: Complex nested structures
+-- ============================================
+
+set finalResult = 0
+set patternCount = 0
+
+iterate (set outer = 1, outer <= 3, outer += 1) then
+    set outerContribution = 0
+
+    given (outer % 2 == 0) then
+        -- even outer: use while loop
+        set inner = 1
+        whilst (inner <= outer) then
+            set pattern = outer * inner * 2
+            outerContribution += pattern
+            inner += 1
+        finish
+    otherwise
+        -- odd outer: use for loop
+        iterate (set inner = 1, inner <= outer, inner += 1) then
+            set pattern = outer + inner
+            outerContribution += pattern
+        finish
+    finish
+
+    finalResult += outerContribution
+    patternCount += 1
+finish
+
+-- ============================================
+-- PART 12: Comments demonstration
+-- ============================================
+
+-- this is a single line comment
+
+/*
+This is a block comment
+spanning multiple lines
+Used for longer explanations
+*/
+
+set commentTest = 42 -- inline comment
+
+-- ============================================
+-- PART 13: Identifier rules showcase
+-- ============================================
+
+set my_variable = 10
+set _privateVar = 20
+set counter2023 = 30
+set total_sum_value = my_variable + _privateVar + counter2023
+
+-- ============================================
+-- PART 14: Boolean logic showcase
+-- ============================================
+
+set hasData = true
+set isValid = true
+set isComplete = false
+
+set canProceed = hasData and isValid
+set needsReview = not isComplete or not isValid
+set complexCondition = (hasData and isValid) and not (isComplete and not canProceed)
+
+-- ============================================
+-- PART 15: Final calculation combining everything
+-- ============================================
+
+set grandTotal = 0
+
+-- add all calculated values
+grandTotal += sum
+grandTotal += product
+grandTotal += power
+grandTotal += whileSum
+grandTotal += forSum
+grandTotal += matrixSum
+grandTotal += accumulator
+grandTotal += finalResult
+grandTotal += score
+grandTotal += bonus
+
+-- apply transformations based on conditions
+given (grandTotal > 1000) then
+    grandTotal = grandTotal / 10
+however (grandTotal > 500) then
+    grandTotal = grandTotal / 5
+finish
+
+-- round to nearest integer using pattern
+set rounded = 0
+iterate (set roundIter = 1, roundIter <= grandTotal, roundIter += 1) then
+    rounded = roundIter
+finish
+
+-- ============================================
+-- OUTPUT: Return the final result
+-- ============================================
+
+rounded

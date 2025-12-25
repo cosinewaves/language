@@ -12,4 +12,6 @@ return {
 	["otherwise"] = "OTHERWISE",
 	["however"] = "HOWEVER",
 	["finish"] = "FINISH",
+	["whilst"] = "WHILST",
+	["iterate"] = "ITERATE",
 } :: { [any]: string }

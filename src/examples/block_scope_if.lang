@@ -1,0 +1,16 @@
+-- if statement block scoping example
+-- demonstrates that variables declared in if blocks don't leak out
+
+set x = 10
+
+given (x > 5) then
+    set message = "x is big"
+    set temp = x * 2
+otherwise
+    set message = "x is small"
+    set temp = x / 2
+finish
+
+-- message and temp don't exist here (they were in block scope)
+-- so we use x which exists in outer scope
+x

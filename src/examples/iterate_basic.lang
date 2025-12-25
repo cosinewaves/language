@@ -1,0 +1,10 @@
+-- basic iterate (for) loop example
+-- demonstrates C-style for loop syntax
+
+set sum = 0
+
+iterate (set i = 1, i <= 10, i += 1) then
+    sum += i
+finish
+
+sum

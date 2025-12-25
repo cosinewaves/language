@@ -1,0 +1,10 @@
+-- iterate countdown example
+-- demonstrates for loop counting down
+
+set result = 10
+
+iterate (set i = 10, i > 0, i -= 1) then
+    result = i
+finish
+
+result

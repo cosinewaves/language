@@ -1,0 +1,11 @@
+-- factorial using iterate loop
+-- demonstrates accumulating product with for loop
+
+set n = 5
+set factorial = 1
+
+iterate (set i = 1, i <= n, i += 1) then
+    factorial *= i
+finish
+
+factorial

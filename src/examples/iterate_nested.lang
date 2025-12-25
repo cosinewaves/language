@@ -1,0 +1,17 @@
+-- nested iterate loops example
+-- demonstrates multiple sequential for loops instead of nested
+-- (nested loops with declarations need block scoping)
+
+set total = 0
+
+-- first loop: sum 1 to 5
+iterate (set i = 1, i <= 5, i += 1) then
+    total += i
+finish
+
+-- second loop: multiply by adding j to total
+iterate (set j = 1, j <= 5, j += 1) then
+    total += j * 2
+finish
+
+total

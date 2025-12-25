@@ -1,0 +1,24 @@
+-- block scope isolation example
+-- demonstrates that variables in blocks are truly isolated
+-- and attempting to access them outside causes errors
+
+set x = 5
+set result = 0
+
+-- declare a variable inside a loop
+iterate (set i = 1, i <= 3, i += 1) then
+    set loopOnly = i * 10
+    result += loopOnly
+finish
+
+-- result exists and has accumulated values
+-- but loopOnly doesn't exist anymore (it was block scoped)
+
+-- if you tried to access loopOnly here, you'd get an error:
+-- loopOnly = 100  -- ERROR: assignment to undeclared variable
+
+-- same with loop variable i:
+-- i = 10  -- ERROR: assignment to undeclared variable
+
+-- only result exists in this scope
+result

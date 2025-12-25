@@ -24,6 +24,8 @@ export type parser = {
 	parseStatement: (self: parser) -> statement,
 	parseVariableDeclaration: (self: parser) -> statement,
 	parseIfStatement: (self: parser) -> statement,
+	parseWhileStatement: (self: parser) -> statement,
+	parseForStatement: (self: parser) -> statement,
 
 	parseExpression: (self: parser) -> expression,
 	parseOr: (self: parser) -> expression,
@@ -90,6 +92,14 @@ function parser.parseStatement(self: parser): statement
 
 	if t.type == tokens.GIVEN then
 		return self:parseIfStatement()
+	end
+
+	if t.type == tokens.WHILST then
+		return self:parseWhileStatement()
+	end
+
+	if t.type == tokens.ITERATE then
+		return self:parseForStatement()
 	end
 
 	return self:parseExpression()
@@ -171,6 +181,68 @@ function parser.parseIfStatement(self: parser): statement
 	self:expect(tokens.FINISH, "(parser.parseIfStatement) expected 'finish' to close if statement")
 
 	return ast.ifStatement(condition, consequent, alternates, alternate) :: statement
+end
+
+-- whilst (condition) then
+--   body
+-- finish
+function parser.parseWhileStatement(self: parser): statement
+	self:consume() -- whilst
+
+	-- parse condition
+	self:expect(tokens.OPEN_PARENTHESIS, "(parser.parseWhileStatement) expected '(' after 'whilst'")
+	local condition = self:parseExpression()
+	self:expect(tokens.CLOSE_PARENTHESIS, "(parser.parseWhileStatement) expected ')' after condition")
+	self:expect(tokens.THEN, "(parser.parseWhileStatement) expected 'then' after condition")
+
+	-- parse body (statements until 'finish')
+	local body: { statement } = {}
+	while self:at() and (self:at() :: token).type ~= tokens.FINISH do
+		body[#body + 1] = self:parseStatement()
+	end
+
+	self:expect(tokens.FINISH, "(parser.parseWhileStatement) expected 'finish' to close whilst loop")
+
+	return ast.whileStatement(condition, body) :: statement
+end
+
+-- iterate (init, condition, update) then
+--   body
+-- finish
+function parser.parseForStatement(self: parser): statement
+	self:consume() -- iterate
+
+	self:expect(tokens.OPEN_PARENTHESIS, "(parser.parseForStatement) expected '(' after 'iterate'")
+
+	-- parse init (must be a variable declaration with 'set')
+	local initToken = self:at()
+	if not initToken or initToken.type ~= tokens.SET then
+		error("(parser.parseForStatement) expected 'set' for loop initialization")
+	end
+	local init = self:parseVariableDeclaration()
+
+	self:expect(tokens.COMMA, "(parser.parseForStatement) expected ',' after initialization")
+
+	-- parse condition
+	local condition = self:parseExpression()
+
+	self:expect(tokens.COMMA, "(parser.parseForStatement) expected ',' after condition")
+
+	-- parse update (assignment or expression)
+	local update = self:parseExpression()
+
+	self:expect(tokens.CLOSE_PARENTHESIS, "(parser.parseForStatement) expected ')' after update")
+	self:expect(tokens.THEN, "(parser.parseForStatement) expected 'then' after for header")
+
+	-- parse body (statements until 'finish')
+	local body: { statement } = {}
+	while self:at() and (self:at() :: token).type ~= tokens.FINISH do
+		body[#body + 1] = self:parseStatement()
+	end
+
+	self:expect(tokens.FINISH, "(parser.parseForStatement) expected 'finish' to close iterate loop")
+
+	return ast.forStatement(init, condition, update, body) :: statement
 end
 
 function parser.parseExpression(self: parser): expression

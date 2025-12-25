@@ -1,0 +1,10 @@
+-- simple whilst loop example
+-- counts down from 10 to 1
+
+set x = 10
+
+whilst (x != 1) then
+    x -= 1
+finish
+
+x

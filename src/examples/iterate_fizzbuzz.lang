@@ -1,0 +1,18 @@
+-- FizzBuzz using iterate loop
+-- demonstrates for loops with control flow
+
+set n = 1
+
+iterate (set i = 1, i <= 15, i += 1) then
+    given (i % 15 == 0) then
+        n = 15
+    however (i % 3 == 0) then
+        n = 3
+    however (i % 5 == 0) then
+        n = 5
+    otherwise
+        n = i
+    finish
+finish
+
+n

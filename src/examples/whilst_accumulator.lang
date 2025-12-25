@@ -1,0 +1,12 @@
+-- whilst loop accumulator example
+-- demonstrates accumulating a sum using a while loop
+
+set counter = 1
+set sum = 0
+
+whilst (counter <= 10) then
+    sum += counter
+    counter += 1
+finish
+
+sum
