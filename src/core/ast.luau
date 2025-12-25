@@ -13,6 +13,9 @@ local nodeTypes = {
 	IfStatement = "IfStatement",
 	WhileStatement = "WhileStatement",
 	ForStatement = "ForStatement",
+	FunctionDeclaration = "FunctionDeclaration",
+	CallExpression = "CallExpression",
+	ReturnStatement = "ReturnStatement",
 }
 
 export type statement = { kind: string }
@@ -50,6 +53,32 @@ export type whileStatement = {
 	kind: "WhileStatement",
 	condition: expression,
 	body: { statement },
+}
+
+export type forStatement = {
+	kind: "ForStatement",
+	init: statement,
+	condition: expression,
+	update: statement,
+	body: { statement },
+}
+
+export type functionDeclaration = {
+	kind: "FunctionDeclaration",
+	name: identifier,
+	parameters: { identifier },
+	body: { statement },
+}
+
+export type callExpression = {
+	kind: "CallExpression",
+	callee: expression,
+	arguments: { expression },
+}
+
+export type returnStatement = {
+	kind: "ReturnStatement",
+	value: expression?,
 }
 
 -- iterate (init, condition, update) then
@@ -137,6 +166,34 @@ local function forStatement(
 	}
 end
 
+local function functionDeclaration(
+	name: identifier,
+	parameters: { identifier },
+	body: { statement }
+): functionDeclaration
+	return {
+		kind = nodeTypes.FunctionDeclaration,
+		name = name,
+		parameters = parameters,
+		body = body,
+	}
+end
+
+local function callExpression(callee: expression, arguments: { expression }): callExpression
+	return {
+		kind = nodeTypes.CallExpression,
+		callee = callee,
+		arguments = arguments,
+	}
+end
+
+local function returnStatement(value: expression?): returnStatement
+	return {
+		kind = nodeTypes.ReturnStatement,
+		value = value,
+	}
+end
+
 return {
 	nodeTypes = nodeTypes,
 	program = program,
@@ -151,4 +208,7 @@ return {
 	ifStatement = ifStatement,
 	whileStatement = whileStatement,
 	forStatement = forStatement,
+	functionDeclaration = functionDeclaration,
+	callExpression = callExpression,
+	returnStatement = returnStatement,
 }

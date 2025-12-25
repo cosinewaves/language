@@ -1,0 +1,35 @@
+-- multiple functions example
+-- demonstrates multiple function definitions and calling between them
+
+define square(x) then
+    return x * x
+finish
+
+define double(x) then
+    return x * 2
+finish
+
+define sumOfSquares(a, b) then
+    set squareA = square(a)
+    set squareB = square(b)
+    return squareA + squareB
+finish
+
+define isEven(n) then
+    set remainder = n % 2
+    return remainder == 0
+finish
+
+-- use the functions
+set num1 = 3
+set num2 = 4
+
+set result1 = square(5)
+set result2 = double(10)
+set result3 = sumOfSquares(num1, num2)
+set result4 = isEven(8)
+
+-- final calculation combining all results
+set final = result1 + result2 + result3
+
+final

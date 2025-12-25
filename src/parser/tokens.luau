@@ -31,6 +31,8 @@ export type tokenTypes = {
 	WHILST: string,
 	ITERATE: string,
 	COMMA: string,
+	DEFINE: string,
+	RETURN: string,
 }
 
 return {
@@ -64,4 +66,6 @@ return {
 	WHILST = "WHILST",
 	ITERATE = "ITERATE",
 	COMMA = "COMMA",
+	DEFINE = "DEFINE",
+	RETURN = "RETURN",
 } :: tokenTypes

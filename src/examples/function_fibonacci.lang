@@ -1,0 +1,24 @@
+-- fibonacci sequence using recursion
+-- demonstrates recursive functions with multiple base cases
+
+define fibonacci(n) then
+    given (n <= 0) then
+        return 0
+    however (n == 1) then
+        return 1
+    otherwise
+        set fib1 = fibonacci(n - 1)
+        set fib2 = fibonacci(n - 2)
+        return fib1 + fib2
+    finish
+finish
+
+-- calculate fibonacci numbers
+set fib5 = fibonacci(5)
+set fib6 = fibonacci(6)
+set fib7 = fibonacci(7)
+
+-- sum them up
+set total = fib5 + fib6 + fib7
+
+total

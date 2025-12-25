@@ -26,6 +26,8 @@ export type parser = {
 	parseIfStatement: (self: parser) -> statement,
 	parseWhileStatement: (self: parser) -> statement,
 	parseForStatement: (self: parser) -> statement,
+	parseFunctionDeclaration: (self: parser) -> statement,
+	parseReturnStatement: (self: parser) -> statement,
 
 	parseExpression: (self: parser) -> expression,
 	parseOr: (self: parser) -> expression,
@@ -35,6 +37,7 @@ export type parser = {
 	parseMultiplicative: (self: parser) -> expression,
 	parseExponentiation: (self: parser) -> expression,
 	parseUnary: (self: parser) -> expression,
+	parseCallExpression: (self: parser) -> expression,
 	parsePrimary: (self: parser) -> expression,
 }
 
@@ -100,6 +103,14 @@ function parser.parseStatement(self: parser): statement
 
 	if t.type == tokens.ITERATE then
 		return self:parseForStatement()
+	end
+
+	if t.type == tokens.DEFINE then
+		return self:parseFunctionDeclaration()
+	end
+
+	if t.type == tokens.RETURN then
+		return self:parseReturnStatement()
 	end
 
 	return self:parseExpression()
@@ -245,6 +256,54 @@ function parser.parseForStatement(self: parser): statement
 	return ast.forStatement(init, condition, update, body) :: statement
 end
 
+-- define functionName(param1, param2) then
+--   body
+-- finish
+function parser.parseFunctionDeclaration(self: parser): statement
+	self:consume() -- define
+
+	local name = self:expect(tokens.IDENTIFIER, "(parser.parseFunctionDeclaration) expected function name")
+
+	self:expect(tokens.OPEN_PARENTHESIS, "(parser.parseFunctionDeclaration) expected '(' after function name")
+
+	-- parse parameters
+	local params: { ast.identifier } = {}
+	while self:at() and (self:at() :: token).type ~= tokens.CLOSE_PARENTHESIS do
+		local param = self:expect(tokens.IDENTIFIER, "(parser.parseFunctionDeclaration) expected parameter name")
+		params[#params + 1] = ast.identifier(param.value)
+
+		if self:at() and (self:at() :: token).type == tokens.COMMA then
+			self:consume()
+		end
+	end
+
+	self:expect(tokens.CLOSE_PARENTHESIS, "(parser.parseFunctionDeclaration) expected ')' after parameters")
+	self:expect(tokens.THEN, "(parser.parseFunctionDeclaration) expected 'then' after function signature")
+
+	-- parse body
+	local body: { statement } = {}
+	while self:at() and (self:at() :: token).type ~= tokens.FINISH do
+		body[#body + 1] = self:parseStatement()
+	end
+
+	self:expect(tokens.FINISH, "(parser.parseFunctionDeclaration) expected 'finish' to close function")
+
+	return ast.functionDeclaration(ast.identifier(name.value), params, body) :: statement
+end
+
+-- return [expression]
+function parser.parseReturnStatement(self: parser): statement
+	self:consume() -- return
+
+	-- check if there's an expression to return
+	local value: expression? = nil
+	if self:at() and (self:at() :: token).type ~= tokens.FINISH then
+		value = self:parseExpression()
+	end
+
+	return ast.returnStatement(value) :: statement
+end
+
 function parser.parseExpression(self: parser): expression
 	local expr = self:parseOr()
 
@@ -372,7 +431,7 @@ function parser.parseExponentiation(self: parser): expression
 	return left
 end
 
--- unary: not
+-- unary: not, -
 function parser.parseUnary(self: parser): expression
 	local t = self:at()
 
@@ -382,7 +441,32 @@ function parser.parseUnary(self: parser): expression
 		return ast.unaryExpression(op, expr) :: expression
 	end
 
-	return self:parsePrimary()
+	return self:parseCallExpression()
+end
+
+-- function calls: identifier(args)
+function parser.parseCallExpression(self: parser): expression
+	local expr = self:parsePrimary()
+
+	-- check for function call
+	while self:at() and (self:at() :: token).type == tokens.OPEN_PARENTHESIS do
+		self:consume() -- (
+
+		local args: { expression } = {}
+		while self:at() and (self:at() :: token).type ~= tokens.CLOSE_PARENTHESIS do
+			args[#args + 1] = self:parseExpression()
+
+			if self:at() and (self:at() :: token).type == tokens.COMMA then
+				self:consume()
+			end
+		end
+
+		self:expect(tokens.CLOSE_PARENTHESIS, "(parser.parseCallExpression) expected ')' after arguments")
+
+		expr = ast.callExpression(expr, args) :: expression
+	end
+
+	return expr
 end
 
 function parser.parsePrimary(self: parser): expression

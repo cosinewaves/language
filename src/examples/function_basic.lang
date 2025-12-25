@@ -1,0 +1,9 @@
+-- basic function example
+-- demonstrates function declaration and calling
+
+define add(a, b) then
+    return a + b
+finish
+
+set result = add(5, 3)
+result
