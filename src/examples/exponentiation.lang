@@ -1,0 +1,28 @@
+-- basic exponentiation
+set base = 2
+set exponent = 8
+set result = base ^ exponent
+result  -- 256
+
+-- right-associativity test
+-- 2^3^2 should equal 2^(3^2) = 2^9 = 512
+-- not (2^3)^2 = 8^2 = 64
+set rightAssoc = 2 ^ 3 ^ 2
+rightAssoc  -- 512
+
+-- with floats
+set floatPower = 2.5 ^ 3
+floatPower  -- 15.625
+
+-- nested in expressions
+set complex = 2 + 3 ^ 2 * 4
+complex  -- 2 + (3^2) * 4 = 2 + 9*4 = 2 + 36 = 38
+
+-- in control flow
+set val = 2 ^ 10
+
+given (val > 1000) then
+    val = 1024
+finish
+
+val
