@@ -75,7 +75,7 @@ local function tokenise(source: string): { token }
 				error("(lexer.tokenise) unterminated block comment")
 			end
 
-		-- augmented assignment operators 
+		-- augmented assignment operators (check after comments to avoid conflicts)
 		elseif char == "+" and source:sub(i + 1, i + 1) == "=" then
 			tokens[#tokens + 1] = makeToken(tokensTbl.PLUS_EQUALS, "+=")
 			i += 2
@@ -110,9 +110,19 @@ local function tokenise(source: string): { token }
 		-- numbers
 		elseif util.isDigit(char) then
 			local start = i
+			-- integer part
 			while i <= length and util.isDigit(source:sub(i, i)) do
 				i += 1
 			end
+
+			-- fractional part: only accept if there's a '.' followed by at least one digit
+			if i <= length and source:sub(i, i) == "." and util.isDigit(source:sub(i + 1, i + 1)) then
+				i += 1 -- consume '.'
+				while i <= length and util.isDigit(source:sub(i, i)) do
+					i += 1
+				end
+			end
+
 			local value = source:sub(start, i - 1)
 			tokens[#tokens + 1] = makeToken(tokensTbl.NUMBER, value)
 
