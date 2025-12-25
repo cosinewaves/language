@@ -35,7 +35,7 @@ local function tokenise(source: string): { token }
 			tokens[#tokens + 1] = makeToken(tokensTbl.CLOSE_PARENTHESIS, char)
 			i += 1
 
-		-- two-character comparison operators and comment starts (check before single-char '=' and binary operators)
+		-- two-character comparison operators (check before single-char '=')
 		elseif char == "=" and source:sub(i + 1, i + 1) == "=" then
 			tokens[#tokens + 1] = makeToken(tokensTbl.EQ, "==")
 			i += 2
@@ -58,7 +58,7 @@ local function tokenise(source: string): { token }
 			while i <= length and source:sub(i, i) ~= "\n" do
 				i += 1
 			end
-			-- leave newline to be skipped by whitespace handler on next loop
+			-- newline left to be skipped by whitespace next loop
 		elseif char == "/" and source:sub(i + 1, i + 1) == "*" then
 			-- block comment: consume until '*/'
 			i += 2
@@ -74,6 +74,22 @@ local function tokenise(source: string): { token }
 			if not closed then
 				error("(lexer.tokenise) unterminated block comment")
 			end
+
+		-- augmented assignment operators 
+		elseif char == "+" and source:sub(i + 1, i + 1) == "=" then
+			tokens[#tokens + 1] = makeToken(tokensTbl.PLUS_EQUALS, "+=")
+			i += 2
+		elseif char == "-" and source:sub(i + 1, i + 1) == "=" then
+			-- note: '--' comment case handled above, so this is safe
+			tokens[#tokens + 1] = makeToken(tokensTbl.MINUS_EQUALS, "-=")
+			i += 2
+		elseif char == "*" and source:sub(i + 1, i + 1) == "=" then
+			tokens[#tokens + 1] = makeToken(tokensTbl.MUL_EQUALS, "*=")
+			i += 2
+		elseif char == "/" and source:sub(i + 1, i + 1) == "=" then
+			-- block comment '/*' handled earlier, so this is safe
+			tokens[#tokens + 1] = makeToken(tokensTbl.DIV_EQUALS, "/=")
+			i += 2
 
 		-- single-character '=' and single <, >
 		elseif char == "=" then

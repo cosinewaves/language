@@ -102,12 +102,26 @@ end
 function parser.parseExpression(self: parser): expression
 	local expr = self:parseOr()
 
-	-- assignment
+	-- assignment and augmented-assignment (desugared)
 	local t = self:at()
-	if t and t.type == tokens.EQUALS and expr.kind == ast.nodeTypes.Identifier then
-		self:consume()
-		local value = self:parseExpression()
-		return ast.assignment(expr :: identifier, value) :: expression
+	if t and expr.kind == ast.nodeTypes.Identifier then
+		-- simple assignment: =
+		if t.type == tokens.EQUALS then
+			self:consume()
+			local value = self:parseExpression()
+			return ast.assignment(expr :: identifier, value) :: expression
+		end
+
+		-- augmented assignments: +=, -=, *=, /=
+		if t.type == tokens.PLUS_EQUALS or t.type == tokens.MINUS_EQUALS or t.type == tokens.MUL_EQUALS or t.type == tokens.DIV_EQUALS then
+			local tok = self:consume()
+			-- derive the operator symbol from the token value, e.g. "+=" -> "+"
+			local op = tok.value:sub(1, 1)
+			local value = self:parseExpression()
+			-- desugar: a += b  => a = a + b
+			local bin = ast.binaryExpression(expr, op, value) :: expression
+			return ast.assignment(expr :: identifier, bin) :: expression
+		end
 	end
 
 	return expr
