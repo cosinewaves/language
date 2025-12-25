@@ -13,4 +13,5 @@ return {
 	["however"] = "HOWEVER",
 	["finish"] = "FINISH",
 	["whilst"] = "WHILST",
+	["iterate"] = "ITERATE",
 } :: { [any]: string }

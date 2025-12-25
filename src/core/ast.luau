@@ -12,6 +12,7 @@ local nodeTypes = {
 	Assignment = "Assignment",
 	IfStatement = "IfStatement",
 	WhileStatement = "WhileStatement",
+	ForStatement = "ForStatement",
 }
 
 export type statement = { kind: string }
@@ -48,6 +49,17 @@ export type ifStatement = {
 export type whileStatement = {
 	kind: "WhileStatement",
 	condition: expression,
+	body: { statement },
+}
+
+-- iterate (init, condition, update) then
+--   body
+-- finish
+export type forStatement = {
+	kind: "ForStatement",
+	init: statement, -- variable declaration
+	condition: expression,
+	update: statement, -- assignment/augmented assignment
 	body: { statement },
 }
 
@@ -110,6 +122,21 @@ local function whileStatement(condition: expression, body: { statement }): while
 	}
 end
 
+local function forStatement(
+	init: statement,
+	condition: expression,
+	update: statement,
+	body: { statement }
+): forStatement
+	return {
+		kind = nodeTypes.ForStatement,
+		init = init,
+		condition = condition,
+		update = update,
+		body = body,
+	}
+end
+
 return {
 	nodeTypes = nodeTypes,
 	program = program,
@@ -123,4 +150,5 @@ return {
 	assignment = assignment,
 	ifStatement = ifStatement,
 	whileStatement = whileStatement,
+	forStatement = forStatement,
 }

@@ -20,6 +20,7 @@ type assignment = ast.assignment
 type ifStatement = ast.ifStatement
 type ifBranch = ast.ifBranch
 type whileStatement = ast.whileStatement
+type forStatement = ast.forStatement
 
 local function evaluate(node: statement | expression, env: environment): runtimeValue
 	if node.kind == ast.nodeTypes.Program then
@@ -111,6 +112,36 @@ local function evaluate(node: statement | expression, env: environment): runtime
 			for _, stmt in whileStmt.body do
 				result = evaluate(stmt, env)
 			end
+		end
+
+		return result
+	end
+
+	if node.kind == ast.nodeTypes.ForStatement then
+		local forStmt = node :: forStatement
+		local result: runtimeValue = false
+
+		-- execute init (variable declaration)
+		evaluate(forStmt.init, env)
+
+		-- loop
+		while true do
+			local conditionValue = evaluate(forStmt.condition, env)
+			if type(conditionValue) ~= "boolean" then
+				error("(evaluator.evaluate) iterate condition must be a boolean")
+			end
+
+			if not conditionValue then
+				break
+			end
+
+			-- execute body
+			for _, stmt in forStmt.body do
+				result = evaluate(stmt, env)
+			end
+
+			-- execute update
+			evaluate(forStmt.update, env)
 		end
 
 		return result

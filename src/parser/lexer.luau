@@ -34,6 +34,9 @@ local function tokenise(source: string): { token }
 		elseif char == ")" then
 			tokens[#tokens + 1] = makeToken(tokensTbl.CLOSE_PARENTHESIS, char)
 			i += 1
+		elseif char == "," then
+			tokens[#tokens + 1] = makeToken(tokensTbl.COMMA, char)
+			i += 1
 
 		-- two-character comparison operators (check before single-char '=')
 		elseif char == "=" and source:sub(i + 1, i + 1) == "=" then
