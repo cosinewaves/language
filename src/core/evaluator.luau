@@ -215,7 +215,7 @@ local function evaluate(node: statement | expression, env: environment): any
 		local callExpr = node :: callExpression
 
 		-- evaluate the callee to get the function
-		local func: functionDeclaration = evaluate(callExpr.callee, env)
+		local func: functionValue = evaluate(callExpr.callee, env)
 
 		if type(func) ~= "table" or func.kind ~= "Function" then
 			error("(evaluator.evaluate) cannot call non-function")
@@ -254,7 +254,7 @@ local function evaluate(node: statement | expression, env: environment): any
 
 			-- check if it's a return value
 			if type(result) == "table" and result.kind == "ReturnValue" then
-				return result.value
+				return (result :: returnValue).value
 			end
 		end
 
