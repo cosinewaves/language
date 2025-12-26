@@ -55,14 +55,6 @@ export type whileStatement = {
 	body: { statement },
 }
 
-export type forStatement = {
-	kind: "ForStatement",
-	init: statement,
-	condition: expression,
-	update: statement,
-	body: { statement },
-}
-
 export type functionDeclaration = {
 	kind: "FunctionDeclaration",
 	name: identifier,
