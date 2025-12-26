@@ -82,9 +82,6 @@ local function evaluate(node: statement | expression, env: environment): any
 				if type(result) == "table" and result.kind == "ReturnValue" then
 					return result
 				end
-			local result: runtimeValue = false
-			for _, stmt in ifStmt.consequent do
-				result = evaluate(stmt, blockEnv)
 			end
 			return result
 		end
@@ -99,16 +96,13 @@ local function evaluate(node: statement | expression, env: environment): any
 			if branchCondition then
 				-- execute however branch in its own block scope
 				local blockEnv = environment.new(env)
- 				local result: any = false
+				local result: any = false
 				for _, stmt in branch.body do
 					result = evaluate(stmt, blockEnv)
 					-- propagate return values
 					if type(result) == "table" and result.kind == "ReturnValue" then
 						return result
 					end
-				local result: runtimeValue = false
-				for _, stmt in branch.body do
-					result = evaluate(stmt, blockEnv)
 				end
 				return result
 			end
@@ -125,13 +119,9 @@ local function evaluate(node: statement | expression, env: environment): any
 				if type(result) == "table" and result.kind == "ReturnValue" then
 					return result
 				end
-			local result: runtimeValue = false
-			for _, stmt in ifStmt.alternate do
-				result = evaluate(stmt, blockEnv)
 			end
 			return result
 		end
-
 		-- no branch taken
 		return false
 	end
@@ -139,7 +129,6 @@ local function evaluate(node: statement | expression, env: environment): any
 	if node.kind == ast.nodeTypes.WhileStatement then
 		local whileStmt = node :: whileStatement
 		local result: any = false
-		local result: runtimeValue = false
 
 		while true do
 			-- evaluate condition in parent scope
@@ -169,7 +158,6 @@ local function evaluate(node: statement | expression, env: environment): any
 	if node.kind == ast.nodeTypes.ForStatement then
 		local forStmt = node :: forStatement
 		local result: any = false
-		local result: runtimeValue = false
 
 		-- create loop scope for loop variable
 		local loopEnv = environment.new(env)
@@ -227,7 +215,7 @@ local function evaluate(node: statement | expression, env: environment): any
 		local callExpr = node :: callExpression
 
 		-- evaluate the callee to get the function
-		local func = evaluate(callExpr.callee, env)
+		local func: functionDeclaration = evaluate(callExpr.callee, env)
 
 		if type(func) ~= "table" or func.kind ~= "Function" then
 			error("(evaluator.evaluate) cannot call non-function")
