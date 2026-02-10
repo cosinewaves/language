@@ -6,7 +6,21 @@ local keywords = require("./keywords")
 
 export type token = { type: string, value: string }
 
-local binaryOperators = { "+", "-", "*", "/", "^", "%" }
+-- use lookup table for O(1) operator checks
+local binaryOperators = {
+	["+"] = true,
+	["-"] = true,
+	["*"] = true,
+	["/"] = true,
+	["^"] = true,
+	["%"] = true,
+}
+
+local singleCharTokens = {
+	["("] = tokensTbl.OPEN_PARENTHESIS,
+	[")"] = tokensTbl.CLOSE_PARENTHESIS,
+	[","] = tokensTbl.COMMA,
+}
 
 local function makeToken(tokenType: string, value: string): token
 	return {
@@ -22,47 +36,42 @@ local function tokenise(source: string): { token }
 
 	while i <= length do
 		local char: string = source:sub(i, i)
+		local nextChar: string? = if i < length then source:sub(i + 1, i + 1) else nil
 
 		-- skip whitespace first
 		if util.isWhitespace(char) then
 			i += 1
 
-		-- parentheses
-		elseif char == "(" then
-			tokens[#tokens + 1] = makeToken(tokensTbl.OPEN_PARENTHESIS, char)
-			i += 1
-		elseif char == ")" then
-			tokens[#tokens + 1] = makeToken(tokensTbl.CLOSE_PARENTHESIS, char)
-			i += 1
-		elseif char == "," then
-			tokens[#tokens + 1] = makeToken(tokensTbl.COMMA, char)
+		-- single-character tokens (parentheses, comma)
+		elseif singleCharTokens[char] then
+			tokens[#tokens + 1] = makeToken(singleCharTokens[char], char)
 			i += 1
 
 		-- two-character comparison operators (check before single-char '=')
-		elseif char == "=" and source:sub(i + 1, i + 1) == "=" then
+		elseif char == "=" and nextChar == "=" then
 			tokens[#tokens + 1] = makeToken(tokensTbl.EQ, "==")
 			i += 2
-		elseif char == "!" and source:sub(i + 1, i + 1) == "=" then
+		elseif char == "!" and nextChar == "=" then
 			tokens[#tokens + 1] = makeToken(tokensTbl.NE, "!=")
 			i += 2
-		elseif char == "<" and source:sub(i + 1, i + 1) == "=" then
+		elseif char == "<" and nextChar == "=" then
 			tokens[#tokens + 1] = makeToken(tokensTbl.LTE, "<=")
 			i += 2
-		elseif char == ">" and source:sub(i + 1, i + 1) == "=" then
+		elseif char == ">" and nextChar == "=" then
 			tokens[#tokens + 1] = makeToken(tokensTbl.GTE, ">=")
 			i += 2
 
 		-- comments:
 		-- single-line: --
 		-- block: /* ... */
-		elseif char == "-" and source:sub(i + 1, i + 1) == "-" then
+		elseif char == "-" and nextChar == "-" then
 			-- consume until end of line
 			i += 2
 			while i <= length and source:sub(i, i) ~= "\n" do
 				i += 1
 			end
 			-- newline left to be skipped by whitespace next loop
-		elseif char == "/" and source:sub(i + 1, i + 1) == "*" then
+		elseif char == "/" and nextChar == "*" then
 			-- block comment: consume until '*/'
 			i += 2
 			local closed = false
@@ -79,17 +88,17 @@ local function tokenise(source: string): { token }
 			end
 
 		-- augmented assignment operators (check after comments to avoid conflicts)
-		elseif char == "+" and source:sub(i + 1, i + 1) == "=" then
+		elseif char == "+" and nextChar == "=" then
 			tokens[#tokens + 1] = makeToken(tokensTbl.PLUS_EQUALS, "+=")
 			i += 2
-		elseif char == "-" and source:sub(i + 1, i + 1) == "=" then
+		elseif char == "-" and nextChar == "=" then
 			-- note: '--' comment case handled above, so this is safe
 			tokens[#tokens + 1] = makeToken(tokensTbl.MINUS_EQUALS, "-=")
 			i += 2
-		elseif char == "*" and source:sub(i + 1, i + 1) == "=" then
+		elseif char == "*" and nextChar == "=" then
 			tokens[#tokens + 1] = makeToken(tokensTbl.MUL_EQUALS, "*=")
 			i += 2
-		elseif char == "/" and source:sub(i + 1, i + 1) == "=" then
+		elseif char == "/" and nextChar == "=" then
 			-- block comment '/*' handled earlier, so this is safe
 			tokens[#tokens + 1] = makeToken(tokensTbl.DIV_EQUALS, "/=")
 			i += 2
@@ -106,7 +115,7 @@ local function tokenise(source: string): { token }
 			i += 1
 
 		-- binary operators (single-char)
-		elseif table.find(binaryOperators, char) then
+		elseif binaryOperators[char] then
 			tokens[#tokens + 1] = makeToken(tokensTbl.BINARY_OPERATOR, char)
 			i += 1
 
@@ -119,7 +128,9 @@ local function tokenise(source: string): { token }
 			end
 
 			-- fractional part: only accept if there's a '.' followed by at least one digit
-			if i <= length and source:sub(i, i) == "." and util.isDigit(source:sub(i + 1, i + 1)) then
+			local currentChar = if i <= length then source:sub(i, i) else ""
+			local followingChar = if i < length then source:sub(i + 1, i + 1) else ""
+			if currentChar == "." and util.isDigit(followingChar) then
 				i += 1 -- consume '.'
 				while i <= length and util.isDigit(source:sub(i, i)) do
 					i += 1
