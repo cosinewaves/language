@@ -6,7 +6,6 @@ export type environment = {
 
 	declare: (self: environment, name: string, value: any) -> (),
 	assign: (self: environment, name: string, value: any) -> (),
-	has: (self: environment, name: string) -> boolean,
 	lookup: (self: environment, name: string) -> any,
 }
 
@@ -38,16 +37,6 @@ function environment.assign(self: environment, name: string, value: any): ()
 	else
 		error("(environment.assign) assignment to undeclared variable: " .. name)
 	end
-end
-
--- check if a variable exists in this scope or parent scopes
-function environment.has(self: environment, name: string): boolean
-	if self.values[name] ~= nil then
-		return true
-	elseif self.parent then
-		return self.parent:has(name)
-	end
-	return false
 end
 
 -- lookup variable value (searches parent scopes)
