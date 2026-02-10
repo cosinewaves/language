@@ -89,31 +89,23 @@ function parser.parseStatement(self: parser): statement
 		error("(parser.parseStatement) unexpected EOF")
 	end
 
-	if t.type == tokens.SET then
+	local tokenType = t.type
+
+	if tokenType == tokens.SET then
 		return self:parseVariableDeclaration()
-	end
-
-	if t.type == tokens.GIVEN then
+	elseif tokenType == tokens.GIVEN then
 		return self:parseIfStatement()
-	end
-
-	if t.type == tokens.WHILST then
+	elseif tokenType == tokens.WHILST then
 		return self:parseWhileStatement()
-	end
-
-	if t.type == tokens.ITERATE then
+	elseif tokenType == tokens.ITERATE then
 		return self:parseForStatement()
-	end
-
-	if t.type == tokens.DEFINE then
+	elseif tokenType == tokens.DEFINE then
 		return self:parseFunctionDeclaration()
-	end
-
-	if t.type == tokens.RETURN then
+	elseif tokenType == tokens.RETURN then
 		return self:parseReturnStatement()
+	else
+		return self:parseExpression()
 	end
-
-	return self:parseExpression()
 end
 
 function parser.parseVariableDeclaration(self: parser): statement
@@ -145,18 +137,21 @@ function parser.parseIfStatement(self: parser): statement
 
 	-- parse consequent body (statements until 'however', 'otherwise', or 'finish')
 	local consequent: { statement } = {}
+	local current = self:at()
 	while
-		self:at()
-		and (self:at() :: token).type ~= tokens.HOWEVER
-		and (self:at() :: token).type ~= tokens.OTHERWISE
-		and (self:at() :: token).type ~= tokens.FINISH
+		current
+		and current.type ~= tokens.HOWEVER
+		and current.type ~= tokens.OTHERWISE
+		and current.type ~= tokens.FINISH
 	do
 		consequent[#consequent + 1] = self:parseStatement()
+		current = self:at()
 	end
 
 	-- parse however clauses (elseif)
 	local alternates: { ifBranch } = {}
-	while self:at() and (self:at() :: token).type == tokens.HOWEVER do
+	current = self:at()
+	while current and current.type == tokens.HOWEVER do
 		self:consume() -- however
 
 		self:expect(tokens.OPEN_PARENTHESIS, "(parser.parseIfStatement) expected '(' after 'however'")
@@ -165,26 +160,32 @@ function parser.parseIfStatement(self: parser): statement
 		self:expect(tokens.THEN, "(parser.parseIfStatement) expected 'then' after however condition")
 
 		local howeverBody: { statement } = {}
+		current = self:at()
 		while
-			self:at()
-			and (self:at() :: token).type ~= tokens.HOWEVER
-			and (self:at() :: token).type ~= tokens.OTHERWISE
-			and (self:at() :: token).type ~= tokens.FINISH
+			current
+			and current.type ~= tokens.HOWEVER
+			and current.type ~= tokens.OTHERWISE
+			and current.type ~= tokens.FINISH
 		do
 			howeverBody[#howeverBody + 1] = self:parseStatement()
+			current = self:at()
 		end
 
 		alternates[#alternates + 1] = { condition = howeverCondition, body = howeverBody }
+		current = self:at()
 	end
 
 	-- parse otherwise clause (else)
 	local alternate: { statement }? = nil
-	if self:at() and (self:at() :: token).type == tokens.OTHERWISE then
+	current = self:at()
+	if current and current.type == tokens.OTHERWISE then
 		self:consume() -- otherwise
 
 		local otherwiseBody: { statement } = {}
-		while self:at() and (self:at() :: token).type ~= tokens.FINISH do
+		current = self:at()
+		while current and current.type ~= tokens.FINISH do
 			otherwiseBody[#otherwiseBody + 1] = self:parseStatement()
+			current = self:at()
 		end
 		alternate = otherwiseBody
 	end
@@ -208,8 +209,10 @@ function parser.parseWhileStatement(self: parser): statement
 
 	-- parse body (statements until 'finish')
 	local body: { statement } = {}
-	while self:at() and (self:at() :: token).type ~= tokens.FINISH do
+	local current = self:at()
+	while current and current.type ~= tokens.FINISH do
 		body[#body + 1] = self:parseStatement()
+		current = self:at()
 	end
 
 	self:expect(tokens.FINISH, "(parser.parseWhileStatement) expected 'finish' to close whilst loop")
@@ -247,8 +250,10 @@ function parser.parseForStatement(self: parser): statement
 
 	-- parse body (statements until 'finish')
 	local body: { statement } = {}
-	while self:at() and (self:at() :: token).type ~= tokens.FINISH do
+	local current = self:at()
+	while current and current.type ~= tokens.FINISH do
 		body[#body + 1] = self:parseStatement()
+		current = self:at()
 	end
 
 	self:expect(tokens.FINISH, "(parser.parseForStatement) expected 'finish' to close iterate loop")
@@ -268,12 +273,15 @@ function parser.parseFunctionDeclaration(self: parser): statement
 
 	-- parse parameters
 	local params: { ast.identifier } = {}
-	while self:at() and (self:at() :: token).type ~= tokens.CLOSE_PARENTHESIS do
+	local current = self:at()
+	while current and current.type ~= tokens.CLOSE_PARENTHESIS do
 		local param = self:expect(tokens.IDENTIFIER, "(parser.parseFunctionDeclaration) expected parameter name")
 		params[#params + 1] = ast.identifier(param.value)
 
-		if self:at() and (self:at() :: token).type == tokens.COMMA then
+		current = self:at()
+		if current and current.type == tokens.COMMA then
 			self:consume()
+			current = self:at()
 		end
 	end
 
@@ -282,8 +290,10 @@ function parser.parseFunctionDeclaration(self: parser): statement
 
 	-- parse body
 	local body: { statement } = {}
-	while self:at() and (self:at() :: token).type ~= tokens.FINISH do
+	current = self:at()
+	while current and current.type ~= tokens.FINISH do
 		body[#body + 1] = self:parseStatement()
+		current = self:at()
 	end
 
 	self:expect(tokens.FINISH, "(parser.parseFunctionDeclaration) expected 'finish' to close function")
@@ -297,7 +307,8 @@ function parser.parseReturnStatement(self: parser): statement
 
 	-- check if there's an expression to return
 	local value: expression? = nil
-	if self:at() and (self:at() :: token).type ~= tokens.FINISH then
+	local current = self:at()
+	if current and current.type ~= tokens.FINISH then
 		value = self:parseExpression()
 	end
 
@@ -449,21 +460,26 @@ function parser.parseCallExpression(self: parser): expression
 	local expr = self:parsePrimary()
 
 	-- check for function call
-	while self:at() and (self:at() :: token).type == tokens.OPEN_PARENTHESIS do
+	local current = self:at()
+	while current and current.type == tokens.OPEN_PARENTHESIS do
 		self:consume() -- (
 
 		local args: { expression } = {}
-		while self:at() and (self:at() :: token).type ~= tokens.CLOSE_PARENTHESIS do
+		current = self:at()
+		while current and current.type ~= tokens.CLOSE_PARENTHESIS do
 			args[#args + 1] = self:parseExpression()
 
-			if self:at() and (self:at() :: token).type == tokens.COMMA then
+			current = self:at()
+			if current and current.type == tokens.COMMA then
 				self:consume()
+				current = self:at()
 			end
 		end
 
 		self:expect(tokens.CLOSE_PARENTHESIS, "(parser.parseCallExpression) expected ')' after arguments")
 
 		expr = ast.callExpression(expr, args) :: expression
+		current = self:at()
 	end
 
 	return expr
