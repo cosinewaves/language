@@ -3,6 +3,22 @@
 local ast = require("./ast")
 local environment = require("./environment")
 
+-- helper function to execute a block of statements in a new scope
+local function executeBlock(statements: { ast.statement }, parentEnv: environment.environment, evaluateFn: any): any
+	local blockEnv = environment.new(parentEnv)
+	local result: any = false
+
+	for _, stmt in statements do
+		result = evaluateFn(stmt, blockEnv)
+		-- propagate return values
+		if type(result) == "table" and result.kind == "ReturnValue" then
+			return result
+		end
+	end
+
+	return result
+end
+
 export type functionValue = {
 	kind: "Function",
 	name: string,
@@ -74,16 +90,7 @@ local function evaluate(node: statement | expression, env: environment): any
 
 		if conditionValue then
 			-- execute consequent in its own block scope
-			local blockEnv = environment.new(env)
-			local result: any = false
-			for _, stmt in ifStmt.consequent do
-				result = evaluate(stmt, blockEnv)
-				-- propagate return values
-				if type(result) == "table" and result.kind == "ReturnValue" then
-					return result
-				end
-			end
-			return result
+			return executeBlock(ifStmt.consequent, env, evaluate)
 		end
 
 		-- check however clauses (elseif)
@@ -95,32 +102,14 @@ local function evaluate(node: statement | expression, env: environment): any
 
 			if branchCondition then
 				-- execute however branch in its own block scope
-				local blockEnv = environment.new(env)
-				local result: any = false
-				for _, stmt in branch.body do
-					result = evaluate(stmt, blockEnv)
-					-- propagate return values
-					if type(result) == "table" and result.kind == "ReturnValue" then
-						return result
-					end
-				end
-				return result
+				return executeBlock(branch.body, env, evaluate)
 			end
 		end
 
 		-- otherwise clause (else)
 		if ifStmt.alternate then
 			-- execute otherwise in its own block scope
-			local blockEnv = environment.new(env)
-			local result: any = false
-			for _, stmt in ifStmt.alternate do
-				result = evaluate(stmt, blockEnv)
-				-- propagate return values
-				if type(result) == "table" and result.kind == "ReturnValue" then
-					return result
-				end
-			end
-			return result
+			return executeBlock(ifStmt.alternate, env, evaluate)
 		end
 		-- no branch taken
 		return false
@@ -142,13 +131,10 @@ local function evaluate(node: statement | expression, env: environment): any
 			end
 
 			-- create fresh body scope for each iteration
-			local bodyEnv = environment.new(env)
-			for _, stmt in whileStmt.body do
-				result = evaluate(stmt, bodyEnv)
-				-- propagate return values
-				if type(result) == "table" and result.kind == "ReturnValue" then
-					return result
-				end
+			result = executeBlock(whileStmt.body, env, evaluate)
+			-- propagate return values
+			if type(result) == "table" and result.kind == "ReturnValue" then
+				return result
 			end
 		end
 
@@ -177,13 +163,10 @@ local function evaluate(node: statement | expression, env: environment): any
 			end
 
 			-- create fresh body scope for each iteration (child of loop scope)
-			local bodyEnv = environment.new(loopEnv)
-			for _, stmt in forStmt.body do
-				result = evaluate(stmt, bodyEnv)
-				-- propagate return values
-				if type(result) == "table" and result.kind == "ReturnValue" then
-					return result
-				end
+			result = executeBlock(forStmt.body, loopEnv, evaluate)
+			-- propagate return values
+			if type(result) == "table" and result.kind == "ReturnValue" then
+				return result
 			end
 
 			-- execute update in loop scope (so it can access loop variable)
